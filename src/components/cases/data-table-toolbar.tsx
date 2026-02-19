@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Plus, SlidersHorizontal, Search, Download } from "lucide-react";
-import { exportCasesToJSON } from "@/lib/export";
+import { exportCases } from "@/lib/export";
 import { COLUMN_LABELS } from "./columns";
 
 interface DataTableToolbarProps<TData> {
@@ -62,7 +62,7 @@ export function DataTableToolbar<TData>({
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="ghost" size="icon" onClick={exportCasesToJSON}>
+        <Button variant="ghost" size="icon" onClick={exportCases}>
           <Download className="h-4 w-4" />
         </Button>
       </div>

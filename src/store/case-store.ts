@@ -8,6 +8,7 @@ interface CaseState {
   addCase: (data: CaseFormData) => Case;
   updateCase: (id: string, data: Partial<CaseFormData>) => void;
   deleteCase: (id: string) => void;
+  importCases: (cases: Case[]) => void;
 }
 
 export const useCaseStore = create<CaseState>()(
@@ -39,6 +40,10 @@ export const useCaseStore = create<CaseState>()(
 
       deleteCase: (id) => {
         set({ cases: get().cases.filter((c) => c.id !== id) });
+      },
+
+      importCases: (cases) => {
+        set({ cases });
       },
     }),
     { name: "case-organizer-cases" }

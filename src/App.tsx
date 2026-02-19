@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useCaseStore } from "@/store/case-store";
 import type { Case, CaseFormData } from "@/lib/types";
 import { getRandomEncouragingMessage } from "@/lib/messages";
+import { parseImport } from "@/lib/export";
 import { Header } from "@/components/layout/header";
 import { DataTable } from "@/components/cases/data-table";
 import { CaseSheet } from "@/components/cases/case-sheet";
 import { columns } from "@/components/cases/columns";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
 
 type SheetMode = "view" | "edit" | "create";
 
@@ -16,6 +19,8 @@ function App() {
   const addCase = useCaseStore((s) => s.addCase);
   const updateCase = useCaseStore((s) => s.updateCase);
   const deleteCase = useCaseStore((s) => s.deleteCase);
+  const importCases = useCaseStore((s) => s.importCases);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetMode, setSheetMode] = useState<SheetMode>("view");
@@ -48,6 +53,28 @@ function App() {
     toast.success("Case deleted.");
   };
 
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = parseImport(text);
+        importCases(parsed);
+        toast.success(`Imported ${parsed.length} case${parsed.length === 1 ? "" : "s"}.`);
+      } catch (err) {
+        toast.error(
+          `Import failed: ${err instanceof Error ? err.message : "Invalid file"}`
+        );
+      }
+      // Reset so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="px-8">
       <Header />
@@ -65,6 +92,24 @@ function App() {
         onSave={handleSave}
         onDelete={handleDelete}
       />
+      <div className="fixed bottom-6 left-8">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          className="hidden"
+          onChange={handleImport}
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground text-xs"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Upload className="mr-1.5 h-3 w-3" />
+          Import
+        </Button>
+      </div>
       <Toaster position="bottom-right" richColors />
     </div>
   );

@@ -120,7 +120,6 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
         <label htmlFor="antepartum" className="text-sm font-medium">Antepartum</label>
         <Textarea
           id="antepartum"
-          rows={3}
           value={formData.antepartum}
           onChange={(e) => setField("antepartum", e.target.value)}
         />
@@ -130,7 +129,6 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
         <label htmlFor="deliveryPostpartum" className="text-sm font-medium">Delivery / Postpartum</label>
         <Textarea
           id="deliveryPostpartum"
-          rows={3}
           value={formData.deliveryPostpartum}
           onChange={(e) => setField("deliveryPostpartum", e.target.value)}
         />
@@ -140,7 +138,6 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
         <label htmlFor="proceduresTreatments" className="text-sm font-medium">Procedures / Treatments</label>
         <Textarea
           id="proceduresTreatments"
-          rows={3}
           value={formData.proceduresTreatments}
           onChange={(e) => setField("proceduresTreatments", e.target.value)}
         />
@@ -150,7 +147,6 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
         <label htmlFor="notes" className="text-sm font-medium">Notes</label>
         <Textarea
           id="notes"
-          rows={3}
           value={formData.notes}
           onChange={(e) => setField("notes", e.target.value)}
         />

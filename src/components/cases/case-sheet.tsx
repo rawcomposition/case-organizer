@@ -157,7 +157,7 @@ function CaseViewContent({
           <p className="text-sm">{caseData.age ?? "—"}</p>
         </Field>
         <Field label="GA">
-          <p className="text-sm">{caseData.gestationalAge != null ? `${caseData.gestationalAge} wks` : "—"}</p>
+          <p className="text-sm">{caseData.gestationalAge || "—"}</p>
         </Field>
         <Field label="Gravida">
           <p className="text-sm">{caseData.gravida ?? "—"}</p>

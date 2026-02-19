@@ -37,7 +37,7 @@ export const columns: ColumnDef<Case>[] = [
   {
     accessorKey: "gestationalAge",
     header: "GA",
-    cell: ({ row }) => row.getValue("gestationalAge") ?? "—",
+    cell: ({ row }) => row.getValue("gestationalAge") || "—",
   },
   {
     accessorKey: "gravida",

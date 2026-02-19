@@ -17,7 +17,7 @@ const DEFAULT_DATA: CaseFormData = {
   mrn: "",
   finalized: false,
   age: undefined,
-  gestationalAge: undefined,
+  gestationalAge: "",
   gravida: undefined,
   para: undefined,
   nightsInHospital: undefined,
@@ -109,7 +109,14 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
       {/* Numeric row */}
       <div className="grid grid-cols-5 gap-3">
         <NumberField label="Age" value={formData.age} onChange={numericChange("age")} />
-        <NumberField label="GA" value={formData.gestationalAge} onChange={numericChange("gestationalAge")} />
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">GA</label>
+          <Input
+            value={formData.gestationalAge}
+            onChange={(e) => setField("gestationalAge", e.target.value)}
+            className="px-2.5"
+          />
+        </div>
         <NumberField label="Gravida" value={formData.gravida} onChange={numericChange("gravida")} />
         <NumberField label="Para" value={formData.para} onChange={numericChange("para")} />
         <NumberField label="Nights" value={formData.nightsInHospital} onChange={numericChange("nightsInHospital")} />

@@ -12,7 +12,7 @@ export interface Case {
   mrn: string;
   finalized: boolean;
   age?: number;
-  gestationalAge?: number;
+  gestationalAge: string;
   gravida?: number;
   para?: number;
   nightsInHospital?: number;

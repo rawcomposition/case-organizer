@@ -15,6 +15,7 @@ function App() {
   const cases = useCaseStore((s) => s.cases);
   const addCase = useCaseStore((s) => s.addCase);
   const updateCase = useCaseStore((s) => s.updateCase);
+  const deleteCase = useCaseStore((s) => s.deleteCase);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetMode, setSheetMode] = useState<SheetMode>("view");
@@ -42,6 +43,11 @@ function App() {
     }
   };
 
+  const handleDelete = (id: string) => {
+    deleteCase(id);
+    toast.success("Case deleted.");
+  };
+
   return (
     <div className="px-8">
       <Header />
@@ -57,6 +63,7 @@ function App() {
         mode={sheetMode}
         caseData={selectedCase}
         onSave={handleSave}
+        onDelete={handleDelete}
       />
       <Toaster position="bottom-right" richColors />
     </div>

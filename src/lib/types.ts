@@ -1,23 +1,25 @@
-export const CATEGORIES = [
-  "Cardiology",
-  "Neurology",
-  "Orthopedics",
-  "Oncology",
-  "Pediatrics",
-  "Radiology",
-  "Dermatology",
-  "Gastroenterology",
-  "Pulmonology",
-  "Endocrinology",
-] as const;
-
-export type Category = (typeof CATEGORIES)[number];
+export interface Newborn {
+  id: string;
+  perinatalDeath: boolean;
+  weightGrams?: number;
+  apgar1?: number;
+  apgar5?: number;
+  nightsInHospital?: number;
+}
 
 export interface Case {
   id: string;
   mrn: string;
-  category: Category;
   finalized: boolean;
+  age?: number;
+  gestationalAge?: number;
+  gravida?: number;
+  para?: number;
+  nightsInHospital?: number;
+  antepartum: string;
+  deliveryPostpartum: string;
+  proceduresTreatments: string;
+  newborns: Newborn[];
   notes: string;
   createdAt: string;
   updatedAt: string;

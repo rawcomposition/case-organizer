@@ -1,14 +1,13 @@
 import { useState } from "react";
 import type { Case, CaseFormData } from "@/lib/types";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { FinalizedCell } from "./finalized-cell";
 import { CaseForm } from "./case-form";
 import { Pencil, Trash2 } from "lucide-react";
@@ -77,43 +76,49 @@ export function CaseSheet({
         : undefined;
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="text-lg">{title}</SheetTitle>
-          {description && <SheetDescription>{description}</SheetDescription>}
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-lg">{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
+        </DialogHeader>
 
-        <div className="px-6 pb-6">
-          {effectiveMode === "view" && caseData ? (
-            <CaseViewContent
-              caseData={caseData}
-              onEdit={() => setMode("edit")}
-              onDelete={() => {
-                onDelete(caseData.id);
-                onOpenChange(false);
-              }}
-            />
-          ) : (
-            <CaseForm
-              key={caseData?.id ?? "new"}
-              initialData={
-                effectiveMode === "edit" && caseData
-                  ? {
-                      mrn: caseData.mrn,
-                      category: caseData.category,
-                      finalized: caseData.finalized,
-                      notes: caseData.notes,
-                    }
-                  : undefined
-              }
-              onSave={handleSave}
-              onCancel={handleCancel}
-            />
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+        {effectiveMode === "view" && caseData ? (
+          <CaseViewContent
+            caseData={caseData}
+            onEdit={() => setMode("edit")}
+            onDelete={() => {
+              onDelete(caseData.id);
+              onOpenChange(false);
+            }}
+          />
+        ) : (
+          <CaseForm
+            key={caseData?.id ?? "new"}
+            initialData={
+              effectiveMode === "edit" && caseData
+                ? {
+                    mrn: caseData.mrn,
+                    finalized: caseData.finalized,
+                    age: caseData.age,
+                    gestationalAge: caseData.gestationalAge,
+                    gravida: caseData.gravida,
+                    para: caseData.para,
+                    nightsInHospital: caseData.nightsInHospital,
+                    antepartum: caseData.antepartum,
+                    deliveryPostpartum: caseData.deliveryPostpartum,
+                    proceduresTreatments: caseData.proceduresTreatments,
+                    newborns: caseData.newborns,
+                    notes: caseData.notes,
+                  }
+                : undefined
+            }
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -134,14 +139,10 @@ function CaseViewContent({
 
   return (
     <div className="space-y-6">
+      {/* Top row: MRN + Finalized */}
       <div className="grid grid-cols-3 gap-x-6 gap-y-5">
         <Field label="MRN">
           <p className="text-sm font-medium">{caseData.mrn}</p>
-        </Field>
-        <Field label="Category">
-          <Badge variant="secondary" className="mt-0.5">
-            {caseData.category}
-          </Badge>
         </Field>
         <Field label="Finalized">
           <div className="mt-0.5">
@@ -150,12 +151,81 @@ function CaseViewContent({
         </Field>
       </div>
 
-      <Field label="Notes">
-        <p className="text-sm whitespace-pre-wrap leading-relaxed">
-          {caseData.notes || "No notes added."}
-        </p>
-      </Field>
+      {/* Numeric fields */}
+      <div className="grid grid-cols-5 gap-x-4 gap-y-5">
+        <Field label="Age">
+          <p className="text-sm">{caseData.age ?? "—"}</p>
+        </Field>
+        <Field label="GA">
+          <p className="text-sm">{caseData.gestationalAge != null ? `${caseData.gestationalAge} wks` : "—"}</p>
+        </Field>
+        <Field label="Gravida">
+          <p className="text-sm">{caseData.gravida ?? "—"}</p>
+        </Field>
+        <Field label="Para">
+          <p className="text-sm">{caseData.para ?? "—"}</p>
+        </Field>
+        <Field label="Nights">
+          <p className="text-sm">{caseData.nightsInHospital ?? "—"}</p>
+        </Field>
+      </div>
 
+      {/* Textarea fields */}
+      {caseData.antepartum && (
+        <Field label="Antepartum">
+          <p className="text-sm whitespace-pre-wrap leading-relaxed">{caseData.antepartum}</p>
+        </Field>
+      )}
+
+      {caseData.deliveryPostpartum && (
+        <Field label="Delivery / Postpartum">
+          <p className="text-sm whitespace-pre-wrap leading-relaxed">{caseData.deliveryPostpartum}</p>
+        </Field>
+      )}
+
+      {caseData.proceduresTreatments && (
+        <Field label="Procedures / Treatments">
+          <p className="text-sm whitespace-pre-wrap leading-relaxed">{caseData.proceduresTreatments}</p>
+        </Field>
+      )}
+
+      {caseData.notes && (
+        <Field label="Notes">
+          <p className="text-sm whitespace-pre-wrap leading-relaxed">{caseData.notes}</p>
+        </Field>
+      )}
+
+      {/* Newborns */}
+      {caseData.newborns.length > 0 && (
+        <Field label={`Newborns (${caseData.newborns.length})`}>
+          <div className="border rounded-2xl overflow-hidden mt-1">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-muted/50 text-muted-foreground">
+                  <th className="text-left font-medium px-2.5 py-2">Death</th>
+                  <th className="text-left font-medium px-2.5 py-2">Wt (g)</th>
+                  <th className="text-left font-medium px-2.5 py-2">A1</th>
+                  <th className="text-left font-medium px-2.5 py-2">A5</th>
+                  <th className="text-left font-medium px-2.5 py-2">Nights</th>
+                </tr>
+              </thead>
+              <tbody>
+                {caseData.newborns.map((nb) => (
+                    <tr key={nb.id} className="border-t border-border/50">
+                      <td className="px-2.5 py-2">{nb.perinatalDeath ? "Yes" : "No"}</td>
+                      <td className="px-2.5 py-2">{nb.weightGrams ?? "—"}</td>
+                      <td className="px-2.5 py-2">{nb.apgar1 ?? "—"}</td>
+                      <td className="px-2.5 py-2">{nb.apgar5 ?? "—"}</td>
+                      <td className="px-2.5 py-2">{nb.nightsInHospital ?? "—"}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </Field>
+      )}
+
+      {/* Footer */}
       <div className="flex items-center justify-between border-t pt-4">
         <div className="flex items-center gap-2">
           <div className="text-xs text-muted-foreground space-y-0.5">

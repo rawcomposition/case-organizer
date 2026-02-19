@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, SlidersHorizontal, Search, Download } from "lucide-react";
 import { exportCasesToJSON } from "@/lib/export";
+import { COLUMN_LABELS } from "./columns";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -52,12 +53,11 @@ export function DataTableToolbar<TData>({
               .map((column) => (
                 <DropdownMenuCheckboxItem
                   key={column.id}
-                  className="capitalize"
                   checked={column.getIsVisible()}
                   onCheckedChange={(value) => column.toggleVisibility(!!value)}
                   onSelect={(e) => e.preventDefault()}
                 >
-                  {column.id}
+                  {COLUMN_LABELS[column.id] ?? column.id}
                 </DropdownMenuCheckboxItem>
               ))}
           </DropdownMenuContent>

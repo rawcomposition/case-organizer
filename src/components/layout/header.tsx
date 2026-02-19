@@ -1,22 +1,20 @@
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { exportCasesToJSON } from "@/lib/export";
+import { ClipboardList } from "lucide-react";
+import { useCaseStore } from "@/store/case-store";
 
 export function Header() {
+  const caseCount = useCaseStore((s) => s.cases.length);
+
   return (
-    <header className="flex items-center justify-between pb-8 pt-10">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Case Organizer
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Organize and track your medical cases
-        </p>
+    <header className="flex flex-col items-center text-center pt-10 pb-2">
+      <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-3">
+        <ClipboardList className="h-7 w-7 text-primary" />
       </div>
-      <Button variant="outline" onClick={exportCasesToJSON}>
-        <Download className="mr-2 h-4 w-4" />
-        Export JSON
-      </Button>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        Case Organizer
+      </h1>
+      <p className="text-sm text-muted-foreground mt-1 mb-4">
+        You have {caseCount} {caseCount === 1 ? "case" : "cases"}
+      </p>
     </header>
   );
 }

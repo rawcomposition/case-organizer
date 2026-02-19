@@ -47,7 +47,6 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
           placeholder="e.g. MRN-001234"
           value={formData.mrn}
           onChange={(e) => setFormData({ ...formData, mrn: e.target.value })}
-          className="h-10"
           required
         />
       </div>
@@ -62,7 +61,7 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
             setFormData({ ...formData, category: value })
           }
         >
-          <SelectTrigger id="category" className="h-10">
+          <SelectTrigger id="category">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

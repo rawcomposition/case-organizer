@@ -7,7 +7,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, SlidersHorizontal, Search } from "lucide-react";
+import { Plus, SlidersHorizontal, Search, Download } from "lucide-react";
+import { exportCasesToJSON } from "@/lib/export";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -23,25 +24,28 @@ export function DataTableToolbar<TData>({
   onAddCase,
 }: DataTableToolbarProps<TData>) {
   return (
-    <div className="flex items-center justify-between gap-4 pb-4">
-      <div className="relative max-w-sm flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search cases..."
-          value={globalFilter}
-          onChange={(e) => onGlobalFilterChange(e.target.value)}
-          className="pl-9 h-10"
-        />
-      </div>
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-center pb-6">
+      <div className="flex items-center gap-2 bg-secondary/60 p-2 rounded-full">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search cases..."
+            value={globalFilter}
+            onChange={(e) => onGlobalFilterChange(e.target.value)}
+            className="pl-10 w-72 h-10 bg-white border-0 shadow-none"
+          />
+        </div>
+        <Button onClick={onAddCase}>
+          <Plus className="mr-1.5 h-4 w-4" />
+          Add Case
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              Columns
+            <Button variant="ghost" size="icon">
+              <SlidersHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="center">
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -51,15 +55,15 @@ export function DataTableToolbar<TData>({
                   className="capitalize"
                   checked={column.getIsVisible()}
                   onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  onSelect={(e) => e.preventDefault()}
                 >
                   {column.id}
                 </DropdownMenuCheckboxItem>
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button onClick={onAddCase}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Case
+        <Button variant="ghost" size="icon" onClick={exportCasesToJSON}>
+          <Download className="h-4 w-4" />
         </Button>
       </div>
     </div>

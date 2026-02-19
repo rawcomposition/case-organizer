@@ -43,7 +43,7 @@ function App() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4">
+    <div className="px-8">
       <Header />
       <DataTable
         columns={columns}

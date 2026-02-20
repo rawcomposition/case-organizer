@@ -6,6 +6,7 @@ import { useUIStore } from "@/store/ui-store";
 import type { Case, CaseFormData } from "@/lib/types";
 import { getRandomEncouragingMessage } from "@/lib/messages";
 import { parseImport } from "@/lib/export";
+import { playTadaSound } from "@/lib/sounds";
 import { getColumnsForTab } from "@/components/cases/columns";
 import { Header } from "@/components/layout/header";
 import { TabBar } from "@/components/layout/tab-bar";
@@ -51,9 +52,10 @@ function App() {
   };
 
   const handleSave = (data: CaseFormData) => {
-    if (sheetMode === "create" || (sheetMode === "create" && !selectedCase)) {
+    if (sheetMode === "create") {
       addCase(data);
       toast.success(getRandomEncouragingMessage());
+      playTadaSound();
     } else if (selectedCase) {
       updateCase(selectedCase.id, data);
     }

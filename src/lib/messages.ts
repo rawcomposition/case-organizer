@@ -14,6 +14,20 @@ const ENCOURAGING_MESSAGES = [
   "Case logged! Staying organized takes real effort — proud of you 📂",
   "Done! Remember to take a breather when you need one ☕",
   "Case created! You're absolutely crushing it today 🎉",
+  "Boom! Another case in the books — you're unstoppable 📖",
+  "Case saved! Like a little bird building its nest, one piece at a time 🐦",
+  "You're flying through these cases! Keep soaring 🕊️",
+  "Organized and done! That's the kind of energy we love 🔥",
+  "Case logged! Small steps lead to big accomplishments 👏",
+  "Way to go! Your consistency is truly inspiring 💫",
+  "Saved! You're building something great, one case at a time 🧱",
+  "Case added! Teamwork makes the dream work — and you're a star player ⚡",
+  "Another case down! You're like an early bird catching every detail 🐤",
+  "Nicely done! Keep that momentum going strong 💛",
+  "Case recorded! Precision and care — that's your superpower 🎯",
+  "You just keep getting better at this! Case saved 🌻",
+  "Case organized! Take pride in the work you're doing 🏅",
+  "Logged! Every case you handle makes a real impact 🌍",
 ];
 
 export function getRandomEncouragingMessage(): string {

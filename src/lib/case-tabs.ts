@@ -43,7 +43,7 @@ export const TAB_CONFIG: TabConfig[] = [
     id: "gyn",
     label: "GYN",
     numericFields: ["age", "gravida", "para", "nightsInHospital"],
-    textFields: ["preopDiagnosis", "proceduresTreatments", "surgicalPathology", "complications"],
+    textFields: ["preopDiagnosis", "proceduresTreatments", "surgicalPathology", "complications", "notes"],
     showNewborns: false,
     showGA: false,
     columns: [
@@ -57,6 +57,7 @@ export const TAB_CONFIG: TabConfig[] = [
       "proceduresTreatments",
       "surgicalPathology",
       "complications",
+      "notes",
     ],
   },
 ];

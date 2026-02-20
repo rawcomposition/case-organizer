@@ -123,3 +123,10 @@
     @apply bg-background text-foreground;
     }
 }
+
+[data-sonner-toast] {
+  width: fit-content !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin-inline: auto !important;
+}

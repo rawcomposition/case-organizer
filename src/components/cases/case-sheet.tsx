@@ -2,7 +2,6 @@ import { useState } from "react";
 import type { Case, CaseFormData } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FinalizedCell } from "./finalized-cell";
 import { CaseForm } from "./case-form";
 import { Pencil, Trash2 } from "lucide-react";
 

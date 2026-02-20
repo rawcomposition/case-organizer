@@ -44,7 +44,6 @@ function App() {
       toast.success(getRandomEncouragingMessage());
     } else if (selectedCase) {
       updateCase(selectedCase.id, data);
-      toast.success("Case updated successfully.");
     }
   };
 
@@ -110,7 +109,7 @@ function App() {
           Import
         </Button>
       </div>
-      <Toaster position="bottom-right" richColors />
+      <Toaster position="top-center" />
     </div>
   );
 }

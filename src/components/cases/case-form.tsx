@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { nanoid } from "nanoid";
 import type { CaseFormData, Newborn } from "@/lib/types";
+import { type CaseTab, getTabConfig, COLUMN_LABELS_MAP } from "@/lib/case-tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -9,11 +10,13 @@ import { Plus, Trash2 } from "lucide-react";
 
 interface CaseFormProps {
   initialData?: CaseFormData;
+  caseTab: CaseTab;
   onSave: (data: CaseFormData) => void;
   onCancel: () => void;
 }
 
 const DEFAULT_DATA: CaseFormData = {
+  caseType: "ob",
   mrn: "",
   finalized: false,
   age: undefined,
@@ -26,6 +29,9 @@ const DEFAULT_DATA: CaseFormData = {
   proceduresTreatments: "",
   newborns: [],
   notes: "",
+  preopDiagnosis: "",
+  surgicalPathology: "",
+  complications: "",
 };
 
 function createNewborn(): Newborn {
@@ -39,9 +45,11 @@ function createNewborn(): Newborn {
   };
 }
 
-export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
+export function CaseForm({ initialData, caseTab, onSave, onCancel }: CaseFormProps) {
+  const tabConfig = getTabConfig(caseTab);
+
   const [formData, setFormData] = useState<CaseFormData>(
-    initialData ?? DEFAULT_DATA
+    initialData ?? { ...DEFAULT_DATA, caseType: caseTab }
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,6 +84,8 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
     );
   };
 
+  const numericFieldCount = tabConfig.numericFields.length + (tabConfig.showGA ? 1 : 0);
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* MRN + Finalized */}
@@ -107,95 +117,80 @@ export function CaseForm({ initialData, onSave, onCancel }: CaseFormProps) {
       </div>
 
       {/* Numeric row */}
-      <div className="grid grid-cols-5 gap-3">
-        <NumberField label="Age" value={formData.age} onChange={numericChange("age")} />
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">GA</label>
-          <Input
-            value={formData.gestationalAge}
-            onChange={(e) => setField("gestationalAge", e.target.value)}
-            className="px-2.5"
+      <div className={`grid gap-3`} style={{ gridTemplateColumns: `repeat(${numericFieldCount}, minmax(0, 1fr))` }}>
+        {tabConfig.numericFields.map((field) => (
+          <NumberField
+            key={field}
+            label={COLUMN_LABELS_MAP[field] ?? field}
+            value={formData[field] as number | undefined}
+            onChange={numericChange(field)}
           />
-        </div>
-        <NumberField label="Gravida" value={formData.gravida} onChange={numericChange("gravida")} />
-        <NumberField label="Para" value={formData.para} onChange={numericChange("para")} />
-        <NumberField label="Nights" value={formData.nightsInHospital} onChange={numericChange("nightsInHospital")} />
-      </div>
-
-      {/* Textareas */}
-      <div className="space-y-1.5">
-        <label htmlFor="antepartum" className="text-sm font-medium">Antepartum</label>
-        <Textarea
-          id="antepartum"
-          value={formData.antepartum}
-          onChange={(e) => setField("antepartum", e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="deliveryPostpartum" className="text-sm font-medium">Delivery / Postpartum</label>
-        <Textarea
-          id="deliveryPostpartum"
-          value={formData.deliveryPostpartum}
-          onChange={(e) => setField("deliveryPostpartum", e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="proceduresTreatments" className="text-sm font-medium">Procedures / Treatments</label>
-        <Textarea
-          id="proceduresTreatments"
-          value={formData.proceduresTreatments}
-          onChange={(e) => setField("proceduresTreatments", e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-1.5">
-        <label htmlFor="notes" className="text-sm font-medium">Notes</label>
-        <Textarea
-          id="notes"
-          value={formData.notes}
-          onChange={(e) => setField("notes", e.target.value)}
-        />
-      </div>
-
-      {/* Newborns repeater */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium">Newborns</label>
-          <Button type="button" variant="ghost" size="xs" onClick={addNewborn}>
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Add
-          </Button>
-        </div>
-
-        {formData.newborns.length > 0 && (
-          <div className="border rounded-2xl overflow-hidden">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-muted/50 text-muted-foreground">
-                  <th className="text-left font-medium px-2.5 py-2">Death</th>
-                  <th className="text-left font-medium px-2.5 py-2">Wt (g)</th>
-                  <th className="text-left font-medium px-2.5 py-2">A1</th>
-                  <th className="text-left font-medium px-2.5 py-2">A5</th>
-                  <th className="text-left font-medium px-2.5 py-2">Nights</th>
-                  <th className="w-8"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {formData.newborns.map((nb) => (
-                  <NewbornRow
-                    key={nb.id}
-                    newborn={nb}
-                    onChange={(updates) => updateNewborn(nb.id, updates)}
-                    onRemove={() => removeNewborn(nb.id)}
-                  />
-                ))}
-              </tbody>
-            </table>
+        ))}
+        {tabConfig.showGA && (
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">GA</label>
+            <Input
+              value={formData.gestationalAge}
+              onChange={(e) => setField("gestationalAge", e.target.value)}
+              className="px-2.5"
+            />
           </div>
         )}
       </div>
+
+      {/* Textareas */}
+      {tabConfig.textFields.map((field) => (
+        <div key={field} className="space-y-1.5">
+          <label htmlFor={field} className="text-sm font-medium">
+            {COLUMN_LABELS_MAP[field] ?? field}
+          </label>
+          <Textarea
+            id={field}
+            value={(formData[field] as string) ?? ""}
+            onChange={(e) => setField(field, e.target.value as CaseFormData[typeof field])}
+          />
+        </div>
+      ))}
+
+      {/* Newborns repeater (OB only) */}
+      {tabConfig.showNewborns && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">Newborns</label>
+            <Button type="button" variant="ghost" size="xs" onClick={addNewborn}>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Add
+            </Button>
+          </div>
+
+          {formData.newborns.length > 0 && (
+            <div className="border rounded-2xl overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-muted/50 text-muted-foreground">
+                    <th className="text-left font-medium px-2.5 py-2">Death</th>
+                    <th className="text-left font-medium px-2.5 py-2">Wt (g)</th>
+                    <th className="text-left font-medium px-2.5 py-2">A1</th>
+                    <th className="text-left font-medium px-2.5 py-2">A5</th>
+                    <th className="text-left font-medium px-2.5 py-2">Nights</th>
+                    <th className="w-8"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {formData.newborns.map((nb) => (
+                    <NewbornRow
+                      key={nb.id}
+                      newborn={nb}
+                      onChange={(updates) => updateNewborn(nb.id, updates)}
+                      onRemove={() => removeNewborn(nb.id)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-3 pt-4 border-t">
         <Button type="submit" className="flex-1">Save</Button>

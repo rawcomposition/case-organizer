@@ -1,14 +1,16 @@
-import { useRef, useState } from "react";
+import { useRef, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { useCaseStore } from "@/store/case-store";
+import { useUIStore } from "@/store/ui-store";
 import type { Case, CaseFormData } from "@/lib/types";
 import { getRandomEncouragingMessage } from "@/lib/messages";
 import { parseImport } from "@/lib/export";
+import { getColumnsForTab } from "@/components/cases/columns";
 import { Header } from "@/components/layout/header";
+import { TabBar } from "@/components/layout/tab-bar";
 import { DataTable } from "@/components/cases/data-table";
 import { CaseSheet } from "@/components/cases/case-sheet";
-import { columns } from "@/components/cases/columns";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 
@@ -20,11 +22,21 @@ function App() {
   const updateCase = useCaseStore((s) => s.updateCase);
   const deleteCase = useCaseStore((s) => s.deleteCase);
   const importCases = useCaseStore((s) => s.importCases);
+  const activeTab = useUIStore((s) => s.activeTab);
+  const setActiveTab = useUIStore((s) => s.setActiveTab);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetMode, setSheetMode] = useState<SheetMode>("view");
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+
+  // Filter cases by active tab; default to "ob" for legacy cases without caseType
+  const filteredCases = useMemo(
+    () => cases.filter((c) => (c.caseType ?? "ob") === activeTab),
+    [cases, activeTab]
+  );
+
+  const columns = useMemo(() => getColumnsForTab(activeTab), [activeTab]);
 
   const handleRowClick = (caseItem: Case) => {
     setSelectedCase(caseItem);
@@ -77,9 +89,10 @@ function App() {
   return (
     <div className="px-8">
       <Header />
+      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
       <DataTable
         columns={columns}
-        data={cases}
+        data={filteredCases}
         onRowClick={handleRowClick}
         onAddCase={handleAddCase}
       />
@@ -88,6 +101,7 @@ function App() {
         onOpenChange={setSheetOpen}
         mode={sheetMode}
         caseData={selectedCase}
+        activeTab={activeTab}
         onSave={handleSave}
         onDelete={handleDelete}
       />

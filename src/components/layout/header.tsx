@@ -1,8 +1,11 @@
 import { ClipboardList } from "lucide-react";
 import { useCaseStore } from "@/store/case-store";
+import { useUIStore } from "@/store/ui-store";
 
 export function Header() {
-  const caseCount = useCaseStore((s) => s.cases.length);
+  const cases = useCaseStore((s) => s.cases);
+  const activeTab = useUIStore((s) => s.activeTab);
+  const caseCount = cases.filter((c) => (c.caseType ?? "ob") === activeTab).length;
 
   return (
     <header className="flex flex-col items-center text-center pt-10 pb-2">

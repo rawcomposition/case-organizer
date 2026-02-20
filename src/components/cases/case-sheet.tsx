@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { Case, CaseFormData } from "@/lib/types";
+import type { CaseTab } from "@/lib/case-tabs";
+import { getTabConfig, COLUMN_LABELS_MAP } from "@/lib/case-tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CaseForm } from "./case-form";
@@ -12,14 +14,18 @@ interface CaseSheetProps {
   onOpenChange: (open: boolean) => void;
   mode: SheetMode;
   caseData: Case | null;
+  activeTab: CaseTab;
   onSave: (data: CaseFormData) => void;
   onDelete: (id: string) => void;
 }
 
-export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, onSave, onDelete }: CaseSheetProps) {
+export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, activeTab, onSave, onDelete }: CaseSheetProps) {
   const [mode, setMode] = useState<SheetMode>(initialMode);
 
   const effectiveMode = initialMode === "create" ? "create" : initialMode === "edit" ? "edit" : mode;
+
+  // When editing/viewing an existing case, use its own type; for new cases, use the active tab
+  const caseTab = caseData?.caseType ?? activeTab;
 
   const handleSave = (data: CaseFormData) => {
     onSave(data);
@@ -71,9 +77,11 @@ export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, onS
         ) : (
           <CaseForm
             key={caseData?.id ?? "new"}
+            caseTab={caseTab}
             initialData={
               effectiveMode === "edit" && caseData
                 ? {
+                    caseType: caseData.caseType,
                     mrn: caseData.mrn,
                     finalized: caseData.finalized,
                     age: caseData.age,
@@ -86,6 +94,9 @@ export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, onS
                     proceduresTreatments: caseData.proceduresTreatments,
                     newborns: caseData.newborns,
                     notes: caseData.notes,
+                    preopDiagnosis: caseData.preopDiagnosis,
+                    surgicalPathology: caseData.surgicalPathology,
+                    complications: caseData.complications,
                   }
                 : undefined
             }
@@ -105,6 +116,9 @@ function CaseViewContent({ caseData, onEdit, onDelete }: { caseData: Case; onEdi
     }
   };
 
+  const tabConfig = getTabConfig(caseData.caseType ?? "ob");
+  const numericFieldCount = tabConfig.numericFields.length + (tabConfig.showGA ? 1 : 0);
+
   return (
     <div className="space-y-6">
       {/* Top row: MRN + Finalized */}
@@ -118,51 +132,32 @@ function CaseViewContent({ caseData, onEdit, onDelete }: { caseData: Case; onEdi
       </div>
 
       {/* Numeric fields */}
-      <div className="grid grid-cols-5 gap-x-4 gap-y-5">
-        <Field label="Age">
-          <p className="text-sm">{caseData.age ?? "—"}</p>
-        </Field>
-        <Field label="GA">
-          <p className="text-sm">{caseData.gestationalAge || "—"}</p>
-        </Field>
-        <Field label="Gravida">
-          <p className="text-sm">{caseData.gravida ?? "—"}</p>
-        </Field>
-        <Field label="Para">
-          <p className="text-sm">{caseData.para ?? "—"}</p>
-        </Field>
-        <Field label="Nights">
-          <p className="text-sm">{caseData.nightsInHospital ?? "—"}</p>
-        </Field>
+      <div className={`grid gap-x-4 gap-y-5`} style={{ gridTemplateColumns: `repeat(${numericFieldCount}, minmax(0, 1fr))` }}>
+        {tabConfig.numericFields.map((field) => (
+          <Field key={field} label={COLUMN_LABELS_MAP[field] ?? field}>
+            <p className="text-sm">{(caseData[field] as number | undefined) ?? "—"}</p>
+          </Field>
+        ))}
+        {tabConfig.showGA && (
+          <Field label="GA">
+            <p className="text-sm">{caseData.gestationalAge || "—"}</p>
+          </Field>
+        )}
       </div>
 
       {/* Textarea fields */}
-      {caseData.antepartum && (
-        <Field label="Antepartum">
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{caseData.antepartum}</p>
-        </Field>
-      )}
+      {tabConfig.textFields.map((field) => {
+        const value = caseData[field] as string;
+        if (!value) return null;
+        return (
+          <Field key={field} label={COLUMN_LABELS_MAP[field] ?? field}>
+            <p className="text-sm whitespace-pre-wrap leading-relaxed">{value}</p>
+          </Field>
+        );
+      })}
 
-      {caseData.deliveryPostpartum && (
-        <Field label="Delivery / Postpartum">
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{caseData.deliveryPostpartum}</p>
-        </Field>
-      )}
-
-      {caseData.proceduresTreatments && (
-        <Field label="Procedures / Treatments">
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{caseData.proceduresTreatments}</p>
-        </Field>
-      )}
-
-      {caseData.notes && (
-        <Field label="Notes">
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{caseData.notes}</p>
-        </Field>
-      )}
-
-      {/* Newborns */}
-      {caseData.newborns.length > 0 && (
+      {/* Newborns (OB only) */}
+      {tabConfig.showNewborns && caseData.newborns.length > 0 && (
         <Field label={`Newborns (${caseData.newborns.length})`}>
           <div className="border rounded-2xl overflow-hidden mt-1">
             <table className="w-full text-xs">

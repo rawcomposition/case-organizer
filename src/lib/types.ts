@@ -9,6 +9,7 @@ export interface Newborn {
 
 export interface Case {
   id: string;
+  caseType: "ob" | "gyn";
   mrn: string;
   finalized: boolean;
   age?: number;
@@ -21,6 +22,10 @@ export interface Case {
   proceduresTreatments: string;
   newborns: Newborn[];
   notes: string;
+  // GYN-specific fields
+  preopDiagnosis: string;
+  surgicalPathology: string;
+  complications: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -21,7 +21,6 @@ function formHasVariables(data: CaseFormData, textFields: (keyof CaseFormData)[]
   });
 }
 
-/** Find the first `{...}` variable in `text` at or after `cursor`. */
 function findVariableAfter(text: string, cursor: number): { start: number; end: number } | null {
   const regex = /\{[^}]+\}/g;
   let match: RegExpExecArray | null;
@@ -31,7 +30,6 @@ function findVariableAfter(text: string, cursor: number): { start: number; end: 
   return null;
 }
 
-/** Find the first `{...}` variable in `text`. */
 function findFirstVariable(text: string): { start: number; end: number } | null {
   const match = /\{[^}]+\}/.exec(text);
   return match ? { start: match.index, end: match.index + match[0].length } : null;
@@ -41,6 +39,7 @@ interface CaseFormProps {
   initialData?: CaseFormData;
   caseTab: CaseTab;
   templateDefaults?: Partial<Record<string, string>>;
+  requiredFields?: Record<string, boolean>;
   onSave: (data: CaseFormData) => void;
   onCancel: () => void;
 }
@@ -75,7 +74,7 @@ function createNewborn(): Newborn {
   };
 }
 
-export function CaseForm({ initialData, caseTab, templateDefaults, onSave, onCancel }: CaseFormProps) {
+export function CaseForm({ initialData, caseTab, templateDefaults, requiredFields = {}, onSave, onCancel }: CaseFormProps) {
   const tabConfig = getTabConfig(caseTab);
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
 
@@ -84,42 +83,69 @@ export function CaseForm({ initialData, caseTab, templateDefaults, onSave, onCan
     return { ...DEFAULT_DATA, caseType: caseTab, ...templateDefaults };
   });
 
+  const isRequired = (field: string) => requiredFields[`${caseTab}.${field}`] ?? false;
+
+  const isFieldEmpty = (field: keyof CaseFormData) => {
+    const val = formData[field];
+    if (val === undefined || val === null) return true;
+    if (typeof val === "string") return val.trim() === "";
+    if (typeof val === "number") return false;
+    return false;
+  };
+
+  const hasMissingRequired = [...tabConfig.numericFields, ...tabConfig.textFields, ...(tabConfig.showGA ? ["gestationalAge" as keyof CaseFormData] : [])].some(
+    (field) => isRequired(field as string) && isFieldEmpty(field)
+  );
+
+  const needsNewborn = tabConfig.showNewborns && formData.newborns.length === 0;
   const hasUnfilledVars = formHasVariables(formData, tabConfig.textFields);
+  const cannotSave = hasUnfilledVars || hasMissingRequired || needsNewborn;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (hasUnfilledVars) return;
+    if (cannotSave) return;
     onSave(formData);
   };
 
-  const handleTextareaKeyDown = (field: string) => (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleFormKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== "F2") return;
     e.preventDefault();
 
     const fields = tabConfig.textFields as string[];
-    const currentIdx = fields.indexOf(field);
-    const el = textareaRefs.current[field];
-    const cursor = el?.selectionEnd ?? 0;
-    const currentText = (formData[field as keyof CaseFormData] as string) ?? "";
+    const activeEl = document.activeElement as HTMLTextAreaElement | null;
+    const activeField = fields.find((f) => textareaRefs.current[f] === activeEl);
 
-    // 1. Try to find a variable after cursor in the current field
-    const inCurrent = findVariableAfter(currentText, cursor);
-    if (inCurrent) {
-      el?.focus();
-      el?.setSelectionRange(inCurrent.start, inCurrent.end);
-      return;
-    }
-
-    // 2. Search subsequent fields, then wrap to fields before (and current from start)
-    for (let i = 1; i <= fields.length; i++) {
-      const nextField = fields[(currentIdx + i) % fields.length];
-      const text = (formData[nextField as keyof CaseFormData] as string) ?? "";
-      const found = findFirstVariable(text);
-      if (found) {
-        const nextEl = textareaRefs.current[nextField];
-        nextEl?.focus();
-        nextEl?.setSelectionRange(found.start, found.end);
+    if (activeField) {
+      const cursor = activeEl!.selectionEnd;
+      const currentText = (formData[activeField as keyof CaseFormData] as string) ?? "";
+      const inCurrent = findVariableAfter(currentText, cursor);
+      if (inCurrent) {
+        activeEl!.setSelectionRange(inCurrent.start, inCurrent.end);
         return;
+      }
+
+      const startIdx = fields.indexOf(activeField);
+      for (let i = 1; i <= fields.length; i++) {
+        const nextField = fields[(startIdx + i) % fields.length];
+        const text = (formData[nextField as keyof CaseFormData] as string) ?? "";
+        const found = findFirstVariable(text);
+        if (found) {
+          const nextEl = textareaRefs.current[nextField];
+          nextEl?.focus();
+          nextEl?.setSelectionRange(found.start, found.end);
+          return;
+        }
+      }
+    } else {
+      for (const field of fields) {
+        const text = (formData[field as keyof CaseFormData] as string) ?? "";
+        const found = findFirstVariable(text);
+        if (found) {
+          const el = textareaRefs.current[field];
+          el?.focus();
+          el?.setSelectionRange(found.start, found.end);
+          return;
+        }
       }
     }
   };
@@ -154,7 +180,7 @@ export function CaseForm({ initialData, caseTab, templateDefaults, onSave, onCan
   const numericFieldCount = tabConfig.numericFields.length + (tabConfig.showGA ? 1 : 0);
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="flex flex-col gap-5">
       {/* MRN + Finalized */}
       <div className="flex items-end gap-4">
         <div className="flex-1 space-y-1.5">
@@ -216,7 +242,7 @@ export function CaseForm({ initialData, caseTab, templateDefaults, onSave, onCan
             id={field}
             value={(formData[field] as string) ?? ""}
             onChange={(e) => setField(field, e.target.value as CaseFormData[typeof field])}
-            onKeyDown={handleTextareaKeyDown(field)}
+
           />
         </div>
       ))}
@@ -262,7 +288,7 @@ export function CaseForm({ initialData, caseTab, templateDefaults, onSave, onCan
       )}
 
       <div className="flex gap-3 pt-4 border-t">
-        <Button type="submit" className="flex-1" disabled={hasUnfilledVars}>Save</Button>
+        <Button type="submit" className="flex-1" disabled={cannotSave}>Save</Button>
         <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>
           Cancel
         </Button>

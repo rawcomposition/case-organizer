@@ -30,6 +30,7 @@ function App() {
   const activeTab = useUIStore((s) => s.activeTab);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const templates = useTemplateStore((s) => s.templates);
+  const requiredFields = useTemplateStore((s) => s.requiredFields);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [page, setPage] = useState<Page>("main");
 
@@ -132,6 +133,7 @@ function App() {
         onSave={handleSave}
         onDelete={handleDelete}
         templateDefaults={getTemplateDefaults()}
+        requiredFields={requiredFields}
       />
       <div className="fixed bottom-6 left-8 flex gap-1">
         <input

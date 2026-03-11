@@ -18,9 +18,10 @@ interface CaseSheetProps {
   onSave: (data: CaseFormData) => void;
   onDelete: (id: string) => void;
   templateDefaults?: Partial<Record<string, string>>;
+  requiredFields?: Record<string, boolean>;
 }
 
-export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, activeTab, onSave, onDelete, templateDefaults }: CaseSheetProps) {
+export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, activeTab, onSave, onDelete, templateDefaults, requiredFields }: CaseSheetProps) {
   const [mode, setMode] = useState<SheetMode>(initialMode);
 
   const effectiveMode = initialMode === "create" ? "create" : initialMode === "edit" ? "edit" : mode;
@@ -102,6 +103,7 @@ export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, act
                 : undefined
             }
             templateDefaults={effectiveMode === "create" ? templateDefaults : undefined}
+            requiredFields={requiredFields}
             onSave={handleSave}
             onCancel={handleCancel}
           />

@@ -135,7 +135,7 @@ function App() {
         templateDefaults={getTemplateDefaults()}
         requiredFields={requiredFields}
       />
-      <div className="fixed bottom-6 left-8 flex gap-1">
+      <div className="flex gap-1 mt-4 pb-6">
         <input
           ref={fileInputRef}
           type="file"

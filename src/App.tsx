@@ -13,9 +13,13 @@ import { TabBar } from "@/components/layout/tab-bar";
 import { DataTable } from "@/components/cases/data-table";
 import { CaseSheet } from "@/components/cases/case-sheet";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { SettingsPage } from "@/components/settings/settings-page";
+import { useTemplateStore } from "@/store/template-store";
+import { getTabConfig } from "@/lib/case-tabs";
+import { Upload, Settings } from "lucide-react";
 
 type SheetMode = "view" | "edit" | "create";
+type Page = "main" | "settings";
 
 function App() {
   const cases = useCaseStore((s) => s.cases);
@@ -25,7 +29,9 @@ function App() {
   const importCases = useCaseStore((s) => s.importCases);
   const activeTab = useUIStore((s) => s.activeTab);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const templates = useTemplateStore((s) => s.templates);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [page, setPage] = useState<Page>("main");
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetMode, setSheetMode] = useState<SheetMode>("view");
@@ -49,6 +55,16 @@ function App() {
     setSelectedCase(null);
     setSheetMode("create");
     setSheetOpen(true);
+  };
+
+  const getTemplateDefaults = (): Partial<Record<string, string>> => {
+    const tabConfig = getTabConfig(activeTab);
+    const defaults: Record<string, string> = {};
+    for (const field of tabConfig.textFields) {
+      const tmpl = templates[`${activeTab}.${field}`];
+      if (tmpl) defaults[field] = tmpl;
+    }
+    return defaults;
   };
 
   const handleSave = (data: CaseFormData) => {
@@ -88,6 +104,15 @@ function App() {
     reader.readAsText(file);
   };
 
+  if (page === "settings") {
+    return (
+      <div className="px-8">
+        <SettingsPage onBack={() => setPage("main")} />
+        <Toaster position="top-center" />
+      </div>
+    );
+  }
+
   return (
     <div className="px-8">
       <Header />
@@ -106,8 +131,9 @@ function App() {
         activeTab={activeTab}
         onSave={handleSave}
         onDelete={handleDelete}
+        templateDefaults={getTemplateDefaults()}
       />
-      <div className="fixed bottom-6 left-8">
+      <div className="fixed bottom-6 left-8 flex gap-1">
         <input
           ref={fileInputRef}
           type="file"
@@ -123,6 +149,15 @@ function App() {
         >
           <Upload className="mr-1.5 h-3 w-3" />
           Import
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground text-xs"
+          onClick={() => setPage("settings")}
+        >
+          <Settings className="mr-1.5 h-3 w-3" />
+          Settings
         </Button>
       </div>
       <Toaster position="top-center" />

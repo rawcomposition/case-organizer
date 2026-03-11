@@ -11,6 +11,7 @@ import { Plus, Trash2 } from "lucide-react";
 interface CaseFormProps {
   initialData?: CaseFormData;
   caseTab: CaseTab;
+  templateDefaults?: Partial<Record<string, string>>;
   onSave: (data: CaseFormData) => void;
   onCancel: () => void;
 }
@@ -45,12 +46,13 @@ function createNewborn(): Newborn {
   };
 }
 
-export function CaseForm({ initialData, caseTab, onSave, onCancel }: CaseFormProps) {
+export function CaseForm({ initialData, caseTab, templateDefaults, onSave, onCancel }: CaseFormProps) {
   const tabConfig = getTabConfig(caseTab);
 
-  const [formData, setFormData] = useState<CaseFormData>(
-    initialData ?? { ...DEFAULT_DATA, caseType: caseTab }
-  );
+  const [formData, setFormData] = useState<CaseFormData>(() => {
+    if (initialData) return initialData;
+    return { ...DEFAULT_DATA, caseType: caseTab, ...templateDefaults };
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

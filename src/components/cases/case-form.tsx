@@ -61,6 +61,11 @@ const DEFAULT_DATA: CaseFormData = {
   preopDiagnosis: "",
   surgicalPathology: "",
   complications: "",
+  visits: undefined,
+  problem: "",
+  diagnosticProcedures: "",
+  treatment: "",
+  result: "",
 };
 
 function createNewborn(): Newborn {

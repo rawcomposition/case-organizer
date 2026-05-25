@@ -18,6 +18,11 @@ export const COLUMN_LABELS: Record<string, string> = {
   preopDiagnosis: "Preop Diagnosis",
   surgicalPathology: "Surgical Pathology",
   complications: "Complications",
+  visits: "Visits",
+  problem: "Problem",
+  diagnosticProcedures: "Diagnostic Procedures",
+  treatment: "Treatment",
+  result: "Result",
 };
 
 function truncatedTextCell(key: string) {
@@ -103,6 +108,31 @@ const ALL_COLUMNS: Record<string, ColumnDef<Case>> = {
     accessorKey: "complications",
     header: "Complications",
     cell: truncatedTextCell("complications"),
+  },
+  visits: {
+    accessorKey: "visits",
+    header: "Visits",
+    cell: ({ row }) => row.getValue("visits") ?? "—",
+  },
+  problem: {
+    accessorKey: "problem",
+    header: "Problem",
+    cell: truncatedTextCell("problem"),
+  },
+  diagnosticProcedures: {
+    accessorKey: "diagnosticProcedures",
+    header: "Diagnostic Procedures",
+    cell: truncatedTextCell("diagnosticProcedures"),
+  },
+  treatment: {
+    accessorKey: "treatment",
+    header: "Treatment",
+    cell: truncatedTextCell("treatment"),
+  },
+  result: {
+    accessorKey: "result",
+    header: "Result",
+    cell: truncatedTextCell("result"),
   },
 };
 

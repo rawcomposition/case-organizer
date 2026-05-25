@@ -1,6 +1,6 @@
 import type { Case } from "./types";
 
-export type CaseTab = "ob" | "gyn";
+export type CaseTab = "ob" | "gyn" | "office";
 
 export interface TabConfig {
   id: CaseTab;
@@ -60,6 +60,27 @@ export const TAB_CONFIG: TabConfig[] = [
       "notes",
     ],
   },
+  {
+    id: "office",
+    label: "Office",
+    numericFields: ["visits", "age", "gravida", "para"],
+    textFields: ["problem", "diagnosticProcedures", "treatment", "result", "notes"],
+    showNewborns: false,
+    showGA: false,
+    columns: [
+      "mrn",
+      "finalized",
+      "visits",
+      "age",
+      "gravida",
+      "para",
+      "problem",
+      "diagnosticProcedures",
+      "treatment",
+      "result",
+      "notes",
+    ],
+  },
 ];
 
 export function getTabConfig(tab: CaseTab): TabConfig {
@@ -79,4 +100,9 @@ export const COLUMN_LABELS_MAP: Partial<Record<keyof Case, string>> = {
   preopDiagnosis: "Preop Diagnosis",
   surgicalPathology: "Surgical Pathology",
   complications: "Complications",
+  visits: "Visits",
+  problem: "Problem",
+  diagnosticProcedures: "Diagnostic Procedures",
+  treatment: "Treatment",
+  result: "Result",
 };

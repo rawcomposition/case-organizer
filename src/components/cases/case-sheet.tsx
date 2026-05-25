@@ -99,6 +99,11 @@ export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, act
                     preopDiagnosis: caseData.preopDiagnosis,
                     surgicalPathology: caseData.surgicalPathology,
                     complications: caseData.complications,
+                    visits: caseData.visits,
+                    problem: caseData.problem,
+                    diagnosticProcedures: caseData.diagnosticProcedures,
+                    treatment: caseData.treatment,
+                    result: caseData.result,
                   }
                 : undefined
             }

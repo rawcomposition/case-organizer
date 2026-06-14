@@ -10,6 +10,8 @@ interface UIState {
   setColumnVisibility: (
     updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)
   ) => void;
+  reviewMode: boolean;
+  toggleReviewMode: () => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -27,6 +29,9 @@ export const useUIStore = create<UIState>()(
             : updater;
         set({ columnVisibility: next });
       },
+
+      reviewMode: false,
+      toggleReviewMode: () => set((s) => ({ reviewMode: !s.reviewMode })),
     }),
     { name: "case-organizer-ui" }
   )

@@ -34,6 +34,7 @@ export function DataTable<TData, TValue>({
   const [globalFilter, setGlobalFilter] = useState("");
   const columnVisibility = useUIStore((s) => s.columnVisibility);
   const setColumnVisibility = useUIStore((s) => s.setColumnVisibility);
+  const reviewMode = useUIStore((s) => s.reviewMode);
 
   const table = useReactTable({
     data,
@@ -48,6 +49,9 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    meta: {
+      onRowClick: (row) => onRowClick(row as TData),
+    },
   });
 
   return (
@@ -81,11 +85,17 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="cursor-pointer"
-                  onClick={() => onRowClick(row.original)}
+                  className={
+                    reviewMode
+                      ? "align-top hover:bg-transparent"
+                      : "cursor-pointer"
+                  }
+                  onClick={
+                    reviewMode ? undefined : () => onRowClick(row.original)
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className={reviewMode ? "align-top" : undefined}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

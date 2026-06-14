@@ -1,7 +1,18 @@
-import type { ColumnDef } from "@tanstack/react-table";
-import type { Case } from "@/lib/types";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { CellContext, ColumnDef } from "@tanstack/react-table";
+import type { Case, CaseFormData } from "@/lib/types";
 import { type CaseTab, getTabConfig } from "@/lib/case-tabs";
 import { FinalizedCell } from "./finalized-cell";
+import { useUIStore } from "@/store/ui-store";
+import { useCaseStore } from "@/store/case-store";
+import { cn } from "@/lib/utils";
+
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface TableMeta<TData> {
+    onRowClick?: (row: Case) => void;
+  }
+}
 
 export const COLUMN_LABELS: Record<string, string> = {
   mrn: "MRN",
@@ -25,23 +36,91 @@ export const COLUMN_LABELS: Record<string, string> = {
   result: "Result",
 };
 
-function truncatedTextCell(key: string) {
-  return ({ row }: { row: { getValue: (k: string) => unknown } }) => {
-    const val = row.getValue(key) as string;
+function TextCell({
+  caseId,
+  field,
+  value,
+}: {
+  caseId: string;
+  field: string;
+  value: string;
+}) {
+  const reviewMode = useUIStore((s) => s.reviewMode);
+  const updateCase = useCaseStore((s) => s.updateCase);
+  const [draft, setDraft] = useState(value);
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  // Resync the draft if the underlying value changes (e.g. edited via the dialog)
+  useEffect(() => setDraft(value), [value]);
+
+  // Grow the textarea to fit its content so nothing is hidden behind a scrollbar
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [draft, reviewMode]);
+
+  if (!reviewMode) {
     return (
       <span className="max-w-[200px] truncate block text-muted-foreground">
-        {val || "—"}
+        {value || "—"}
       </span>
     );
-  };
+  }
+
+  return (
+    <textarea
+      ref={ref}
+      value={draft}
+      rows={3}
+      onChange={(e) => setDraft(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      onBlur={() => {
+        if (draft !== value) {
+          updateCase(caseId, { [field]: draft } as Partial<CaseFormData>);
+        }
+      }}
+      className="block min-w-[220px] w-[calc(100%+2rem)] -mx-4 -my-3 resize-none overflow-hidden rounded-none border-0 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-inset focus:ring-ring"
+    />
+  );
+}
+
+function MrnCell({ row, onClick }: { row: Case; onClick?: (row: Case) => void }) {
+  const reviewMode = useUIStore((s) => s.reviewMode);
+  return (
+    <button
+      type="button"
+      className={cn(
+        "font-medium text-left cursor-pointer",
+        reviewMode ? "underline" : "hover:underline"
+      )}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.(row);
+      }}
+    >
+      {row.mrn}
+    </button>
+  );
+}
+
+function truncatedTextCell(key: string) {
+  return ({ row }: CellContext<Case, unknown>) => (
+    <TextCell
+      caseId={row.original.id}
+      field={key}
+      value={(row.getValue(key) as string) ?? ""}
+    />
+  );
 }
 
 const ALL_COLUMNS: Record<string, ColumnDef<Case>> = {
   mrn: {
     accessorKey: "mrn",
     header: "MRN",
-    cell: ({ row }) => (
-      <span className="font-medium">{row.getValue("mrn")}</span>
+    cell: ({ row, table }) => (
+      <MrnCell row={row.original} onClick={table.options.meta?.onRowClick} />
     ),
   },
   finalized: {

@@ -7,9 +7,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, SlidersHorizontal, Search, Download } from "lucide-react";
+import { Plus, SlidersHorizontal, Search, Download, WrapText } from "lucide-react";
 import { exportCases } from "@/lib/export";
 import { COLUMN_LABELS } from "./columns";
+import { useUIStore } from "@/store/ui-store";
+import { cn } from "@/lib/utils";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -24,6 +26,8 @@ export function DataTableToolbar<TData>({
   onGlobalFilterChange,
   onAddCase,
 }: DataTableToolbarProps<TData>) {
+  const reviewMode = useUIStore((s) => s.reviewMode);
+  const toggleReviewMode = useUIStore((s) => s.toggleReviewMode);
   return (
     <div className="flex items-center justify-center pb-6">
       <div className="flex items-center gap-2 bg-secondary/60 p-2 rounded-full">
@@ -62,6 +66,16 @@ export function DataTableToolbar<TData>({
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
+        <Button
+          variant={reviewMode ? "default" : "ghost"}
+          size="icon"
+          onClick={toggleReviewMode}
+          title={reviewMode ? "Review mode on" : "Review mode off"}
+          aria-pressed={reviewMode}
+          className={cn(reviewMode && "shadow-none")}
+        >
+          <WrapText className="h-4 w-4" />
+        </Button>
         <Button variant="ghost" size="icon" onClick={exportCases}>
           <Download className="h-4 w-4" />
         </Button>

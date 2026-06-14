@@ -5,6 +5,8 @@ import { type CaseTab, getTabConfig } from "@/lib/case-tabs";
 import { FinalizedCell } from "./finalized-cell";
 import { useUIStore } from "@/store/ui-store";
 import { useCaseStore } from "@/store/case-store";
+import { useTemplateStore } from "@/store/template-store";
+import { CharCounter } from "@/components/ui/char-counter";
 import { cn } from "@/lib/utils";
 
 declare module "@tanstack/react-table" {
@@ -38,16 +40,20 @@ export const COLUMN_LABELS: Record<string, string> = {
 
 function TextCell({
   caseId,
+  caseTab,
   field,
   value,
 }: {
   caseId: string;
+  caseTab: CaseTab;
   field: string;
   value: string;
 }) {
   const reviewMode = useUIStore((s) => s.reviewMode);
   const updateCase = useCaseStore((s) => s.updateCase);
+  const charLimit = useTemplateStore((s) => s.charLimits[`${caseTab}.${field}`] ?? null);
   const [draft, setDraft] = useState(value);
+  const [focused, setFocused] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
 
   // Resync the draft if the underlying value changes (e.g. edited via the dialog)
@@ -70,19 +76,25 @@ function TextCell({
   }
 
   return (
-    <textarea
-      ref={ref}
-      value={draft}
-      rows={3}
-      onChange={(e) => setDraft(e.target.value)}
-      onClick={(e) => e.stopPropagation()}
-      onBlur={() => {
-        if (draft !== value) {
-          updateCase(caseId, { [field]: draft } as Partial<CaseFormData>);
-        }
-      }}
-      className="block min-w-[220px] w-[calc(100%+2rem)] -mx-4 -my-3 resize-none overflow-hidden rounded-none border-0 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-inset focus:ring-ring"
-    />
+    <div className="relative -mx-4 -my-3">
+      <textarea
+        ref={ref}
+        value={draft}
+        rows={3}
+        maxLength={charLimit ?? undefined}
+        onChange={(e) => setDraft(e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false);
+          if (draft !== value) {
+            updateCase(caseId, { [field]: draft } as Partial<CaseFormData>);
+          }
+        }}
+        className="block min-w-[220px] w-full resize-none overflow-hidden rounded-none border-0 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-inset focus:ring-ring"
+      />
+      {focused && <CharCounter count={draft.length} limit={charLimit} className="absolute -top-2.5 right-3 z-10" />}
+    </div>
   );
 }
 
@@ -109,6 +121,7 @@ function truncatedTextCell(key: string) {
   return ({ row }: CellContext<Case, unknown>) => (
     <TextCell
       caseId={row.original.id}
+      caseTab={row.original.caseType}
       field={key}
       value={(row.getValue(key) as string) ?? ""}
     />

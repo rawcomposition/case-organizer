@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { CharCounter } from "@/components/ui/char-counter";
+import { useTemplateStore } from "@/store/template-store";
 import { Plus, Trash2 } from "lucide-react";
 
 const VARIABLE_REGEX = /\{[^}]+\}/g;
@@ -81,7 +83,9 @@ function createNewborn(): Newborn {
 
 export function CaseForm({ initialData, caseTab, templateDefaults, requiredFields = {}, onSave, onCancel }: CaseFormProps) {
   const tabConfig = getTabConfig(caseTab);
+  const charLimits = useTemplateStore((s) => s.charLimits);
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CaseFormData>(() => {
     if (initialData) return initialData;
@@ -237,20 +241,31 @@ export function CaseForm({ initialData, caseTab, templateDefaults, requiredField
       </div>
 
       {/* Textareas */}
-      {tabConfig.textFields.map((field) => (
-        <div key={field} className="space-y-1.5">
-          <label htmlFor={field} className="text-sm font-medium">
-            {COLUMN_LABELS_MAP[field] ?? field}
-          </label>
-          <Textarea
-            ref={(el) => { textareaRefs.current[field] = el; }}
-            id={field}
-            value={(formData[field] as string) ?? ""}
-            onChange={(e) => setField(field, e.target.value as CaseFormData[typeof field])}
-
-          />
-        </div>
-      ))}
+      {tabConfig.textFields.map((field) => {
+        const value = (formData[field] as string) ?? "";
+        const charLimit = charLimits[`${caseTab}.${field}`] ?? null;
+        return (
+          <div key={field} className="space-y-1.5">
+            <label htmlFor={field} className="text-sm font-medium">
+              {COLUMN_LABELS_MAP[field] ?? field}
+            </label>
+            <div className="relative">
+              <Textarea
+                ref={(el) => { textareaRefs.current[field] = el; }}
+                id={field}
+                value={value}
+                maxLength={charLimit ?? undefined}
+                onChange={(e) => setField(field, e.target.value as CaseFormData[typeof field])}
+                onFocus={() => setFocusedField(field)}
+                onBlur={() => setFocusedField((f) => (f === field ? null : f))}
+              />
+              {focusedField === field && (
+                <CharCounter count={value.length} limit={charLimit} className="absolute -top-2.5 right-3" />
+              )}
+            </div>
+          </div>
+        );
+      })}
 
       {/* Newborns repeater (OB only) */}
       {tabConfig.showNewborns && (

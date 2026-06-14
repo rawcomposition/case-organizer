@@ -2,6 +2,7 @@ import { TAB_CONFIG, COLUMN_LABELS_MAP } from "@/lib/case-tabs";
 import type { Case } from "@/lib/types";
 import { useTemplateStore } from "@/store/template-store";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
@@ -22,6 +23,8 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   const setTemplate = useTemplateStore((s) => s.setTemplate);
   const requiredFields = useTemplateStore((s) => s.requiredFields);
   const setRequired = useTemplateStore((s) => s.setRequired);
+  const charLimits = useTemplateStore((s) => s.charLimits);
+  const setCharLimit = useTemplateStore((s) => s.setCharLimit);
 
   return (
     <div className="px-8 py-6 max-w-2xl mx-auto">
@@ -58,19 +61,40 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
 
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-medium text-muted-foreground">Templates</h3>
-            {tab.textFields.map((field) => (
-              <div key={`${tab.id}-${field}`} className="space-y-1.5">
-                <label htmlFor={`template-${tab.id}-${field}`} className="text-sm font-medium">
-                  {COLUMN_LABELS_MAP[field] ?? field}
-                </label>
-                <Textarea
-                  id={`template-${tab.id}-${field}`}
-                  value={templates[`${tab.id}.${field}`] ?? ""}
-                  onChange={(e) => setTemplate(`${tab.id}.${field}`, e.target.value)}
-                  rows={3}
-                />
-              </div>
-            ))}
+            {tab.textFields.map((field) => {
+              const key = `${tab.id}.${field}`;
+              return (
+                <div key={`${tab.id}-${field}`} className="space-y-1.5">
+                  <div className="flex items-end justify-between gap-3">
+                    <label htmlFor={`template-${tab.id}-${field}`} className="text-sm font-medium">
+                      {COLUMN_LABELS_MAP[field] ?? field}
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <label htmlFor={`limit-${tab.id}-${field}`} className="text-xs text-muted-foreground">
+                        Char limit
+                      </label>
+                      <Input
+                        id={`limit-${tab.id}-${field}`}
+                        type="number"
+                        min={0}
+                        placeholder="None"
+                        className="h-7 w-24 text-xs"
+                        value={charLimits[key] ?? ""}
+                        onChange={(e) =>
+                          setCharLimit(key, e.target.value === "" ? null : Math.max(0, Number(e.target.value)))
+                        }
+                      />
+                    </div>
+                  </div>
+                  <Textarea
+                    id={`template-${tab.id}-${field}`}
+                    value={templates[key] ?? ""}
+                    onChange={(e) => setTemplate(key, e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}

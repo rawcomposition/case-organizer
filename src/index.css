@@ -147,13 +147,19 @@
     padding-right: 0 !important;
   }
 
+  /* Force solid black text — no muted greys when printed */
+  [data-slot="table"],
+  [data-slot="table"] * {
+    color: #000 !important;
+  }
+
   /* Compact, space-conscious table */
   [data-slot="table-container"] {
     overflow: visible !important;
   }
   [data-slot="table"] {
     width: 100% !important;
-    font-size: 8px !important;
+    font-size: 12px !important;
   }
   [data-slot="table-head"],
   [data-slot="table-cell"] {
@@ -166,7 +172,7 @@
   }
   [data-slot="table-head"] {
     height: auto !important;
-    font-size: 7px !important;
+    font-size: 8px !important;
     letter-spacing: 0 !important;
   }
 

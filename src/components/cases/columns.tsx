@@ -108,7 +108,7 @@ function MrnCell({ row, onClick }: { row: Case; onClick?: (row: Case) => void })
     <button
       type="button"
       className={cn(
-        "text-left cursor-pointer",
+        "font-medium text-left cursor-pointer print:font-normal",
         reviewMode ? "print:no-underline underline" : "hover:underline"
       )}
       onClick={(e) => {

@@ -29,7 +29,7 @@ export function DataTableToolbar<TData>({
   const reviewMode = useUIStore((s) => s.reviewMode);
   const toggleReviewMode = useUIStore((s) => s.toggleReviewMode);
   return (
-    <div className="flex items-center justify-center pb-6">
+    <div className="flex items-center justify-center pb-6 print:hidden">
       <div className="flex items-center gap-2 bg-secondary/60 p-2 rounded-full">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

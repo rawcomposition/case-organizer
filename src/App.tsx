@@ -135,7 +135,7 @@ function App() {
         templateDefaults={getTemplateDefaults()}
         requiredFields={requiredFields}
       />
-      <div className="flex gap-1 mt-4 pb-6">
+      <div className="flex gap-1 mt-4 pb-6 print:hidden">
         <input
           ref={fileInputRef}
           type="file"

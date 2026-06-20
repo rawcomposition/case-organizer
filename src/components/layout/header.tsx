@@ -8,7 +8,7 @@ export function Header() {
   const caseCount = cases.filter((c) => (c.caseType ?? "ob") === activeTab).length;
 
   return (
-    <header className="flex flex-col items-center text-center pt-10 pb-2">
+    <header className="flex flex-col items-center text-center pt-10 pb-2 print:hidden">
       <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-3">
         <ClipboardList className="h-7 w-7 text-primary" />
       </div>

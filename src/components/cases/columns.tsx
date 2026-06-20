@@ -69,14 +69,14 @@ function TextCell({
 
   if (!reviewMode) {
     return (
-      <span className="max-w-[200px] truncate block text-muted-foreground">
+      <span className="max-w-[200px] truncate block text-muted-foreground print:max-w-none print:overflow-visible print:whitespace-pre-wrap">
         {value || "—"}
       </span>
     );
   }
 
   return (
-    <div className="relative -mx-4 -my-3">
+    <div className="relative -mx-4 -my-3 print:m-0">
       <textarea
         ref={ref}
         value={draft}
@@ -91,8 +91,12 @@ function TextCell({
             updateCase(caseId, { [field]: draft } as Partial<CaseFormData>);
           }
         }}
-        className="block min-w-[220px] w-full resize-none overflow-hidden rounded-none border-0 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-inset focus:ring-ring"
+        className="block min-w-[220px] w-full resize-none overflow-hidden rounded-none border-0 bg-white px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-inset focus:ring-ring print:hidden"
       />
+      {/* Plain wrapping text for print — textareas overflow and clip when printed */}
+      <div className="hidden print:block whitespace-pre-wrap break-words">
+        {draft || "—"}
+      </div>
       {focused && <CharCounter count={draft.length} limit={charLimit} className="absolute -top-2.5 right-3 z-10" />}
     </div>
   );
@@ -104,8 +108,8 @@ function MrnCell({ row, onClick }: { row: Case; onClick?: (row: Case) => void })
     <button
       type="button"
       className={cn(
-        "font-medium text-left cursor-pointer",
-        reviewMode ? "underline" : "hover:underline"
+        "text-left cursor-pointer",
+        reviewMode ? "print:no-underline underline" : "hover:underline"
       )}
       onClick={(e) => {
         e.stopPropagation();

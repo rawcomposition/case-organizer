@@ -130,3 +130,54 @@
   right: 0 !important;
   margin-inline: auto !important;
 }
+
+@media print {
+  /* Landscape, tight margins to maximize usable width */
+  @page {
+    size: landscape;
+    margin: 0.35in;
+  }
+
+  /* Drop app chrome padding so the table can use the full page width */
+  body {
+    background: #fff;
+  }
+  #root > div {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Compact, space-conscious table */
+  [data-slot="table-container"] {
+    overflow: visible !important;
+  }
+  [data-slot="table"] {
+    width: 100% !important;
+    font-size: 8px !important;
+  }
+  [data-slot="table-head"],
+  [data-slot="table-cell"] {
+    padding: 2px 4px !important;
+    /* Wrap instead of clipping so no data is cut off horizontally */
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere;
+    vertical-align: top !important;
+  }
+  [data-slot="table-head"] {
+    height: auto !important;
+    font-size: 7px !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* Show all borders crisply and avoid splitting rows across pages */
+  [data-slot="table-row"] {
+    break-inside: avoid;
+  }
+  .rounded-lg {
+    border-radius: 0 !important;
+  }
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+}

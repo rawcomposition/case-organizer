@@ -29,7 +29,7 @@ export function TabBar({ activeTab, onTabChange }: TabBarProps) {
   }, [activeTab]);
 
   return (
-    <div className="flex justify-center pb-4">
+    <div className="flex justify-center pb-4 print:hidden">
       <div
         ref={containerRef}
         className="relative inline-flex items-center gap-1 bg-secondary/60 p-1 rounded-full"

@@ -242,6 +242,10 @@ export const approvedAbbreviations: [string, string][] = [
   ["WES", "Whole exome sequencing"],
   ["WHO", "World Health Organization"],
   ["ZIFT", "Zygote intrafallopian transfer"],
+  // Assumed abbreviations — added without confirmation against the source list.
+  ["HMB", "Heavy menstrual bleeding"],
+  ["POD", "Post operative day"],
+  ["ED", "Emergency department"],
 ];
 
 export type AbbrStatus = "red" | "yellow" | null;

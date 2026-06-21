@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import { nanoid } from "nanoid";
 import type { CaseFormData, Newborn } from "@/lib/types";
-import { type CaseTab, getTabConfig, COLUMN_LABELS_MAP } from "@/lib/case-tabs";
+import { type CaseTab, getTabConfig, getCategories, COLUMN_LABELS_MAP } from "@/lib/case-tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { CategorySelect } from "./category-select";
 import { CharCounter } from "@/components/ui/char-counter";
 import { useTemplateStore } from "@/store/template-store";
 import { Plus, Trash2 } from "lucide-react";
@@ -50,6 +51,7 @@ const DEFAULT_DATA: CaseFormData = {
   caseType: "ob",
   mrn: "",
   finalized: false,
+  category: undefined,
   age: undefined,
   gestationalAge: "",
   gravida: undefined,
@@ -83,6 +85,7 @@ function createNewborn(): Newborn {
 
 export function CaseForm({ initialData, caseTab, templateDefaults, requiredFields = {}, onSave, onCancel }: CaseFormProps) {
   const tabConfig = getTabConfig(caseTab);
+  const categories = getCategories(caseTab);
   const charLimits = useTemplateStore((s) => s.charLimits);
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -217,6 +220,18 @@ export function CaseForm({ initialData, caseTab, templateDefaults, requiredField
           </label>
         </div>
       </div>
+
+      {/* Category (OB / GYN only) */}
+      {categories && (
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Category</label>
+          <CategorySelect
+            categories={categories}
+            value={formData.category}
+            onChange={(num) => setField("category", num)}
+          />
+        </div>
+      )}
 
       {/* Numeric row */}
       <div className={`grid gap-3`} style={{ gridTemplateColumns: `repeat(${numericFieldCount}, minmax(0, 1fr))` }}>

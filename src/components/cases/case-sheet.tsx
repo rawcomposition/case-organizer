@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Case, CaseFormData } from "@/lib/types";
 import type { CaseTab } from "@/lib/case-tabs";
-import { getTabConfig, COLUMN_LABELS_MAP } from "@/lib/case-tabs";
+import { getTabConfig, getCategoryLabel, COLUMN_LABELS_MAP } from "@/lib/case-tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CaseForm } from "./case-form";
@@ -86,6 +86,7 @@ export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, act
                     caseType: caseData.caseType,
                     mrn: caseData.mrn,
                     finalized: caseData.finalized,
+                    category: caseData.category,
                     age: caseData.age,
                     gestationalAge: caseData.gestationalAge,
                     gravida: caseData.gravida,
@@ -127,6 +128,7 @@ function CaseViewContent({ caseData, onEdit, onDelete }: { caseData: Case; onEdi
 
   const tabConfig = getTabConfig(caseData.caseType ?? "ob");
   const numericFieldCount = tabConfig.numericFields.length + (tabConfig.showGA ? 1 : 0);
+  const categoryLabel = getCategoryLabel(caseData.caseType ?? "ob", caseData.category);
 
   return (
     <div className="space-y-6">
@@ -139,6 +141,15 @@ function CaseViewContent({ caseData, onEdit, onDelete }: { caseData: Case; onEdi
           <div className="mt-0.5 text-sm">{caseData.finalized ? "Yes" : "No"}</div>
         </Field>
       </div>
+
+      {/* Category (OB / GYN only) */}
+      {tabConfig.id !== "office" && (
+        <Field label="Category">
+          <p className="text-sm">
+            {categoryLabel ? `${caseData.category}. ${categoryLabel}` : "—"}
+          </p>
+        </Field>
+      )}
 
       {/* Numeric fields */}
       <div className={`grid gap-x-4 gap-y-5`} style={{ gridTemplateColumns: `repeat(${numericFieldCount}, minmax(0, 1fr))` }}>

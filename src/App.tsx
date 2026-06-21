@@ -15,7 +15,7 @@ import { CaseSheet } from "@/components/cases/case-sheet";
 import { Button } from "@/components/ui/button";
 import { SettingsPage } from "@/components/settings/settings-page";
 import { useTemplateStore } from "@/store/template-store";
-import { getTabConfig } from "@/lib/case-tabs";
+import { getTabConfig, getCategoryLabel } from "@/lib/case-tabs";
 import { Upload, Download, Settings } from "lucide-react";
 
 type SheetMode = "view" | "edit" | "create";
@@ -93,6 +93,8 @@ function App() {
     const headers = columnKeys.map((key) => COLUMN_LABELS[key] ?? key);
     const rows = filteredCases.map((c) =>
       columnKeys.map((key) => {
+        // Export the full category label rather than the stored number.
+        if (key === "category") return getCategoryLabel(c.caseType, c.category) ?? "";
         const value = c[key as keyof Case];
         if (typeof value === "boolean") return value ? "Yes" : "No";
         return value ?? "";

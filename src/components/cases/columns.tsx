@@ -1,8 +1,17 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CellContext, ColumnDef } from "@tanstack/react-table";
 import type { Case, CaseFormData } from "@/lib/types";
-import { type CaseTab, getTabConfig } from "@/lib/case-tabs";
+import { type CaseTab, getTabConfig, getCategories, getCategoryLabel } from "@/lib/case-tabs";
 import { FinalizedCell } from "./finalized-cell";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { CategoryList } from "./category-select";
 import { useUIStore } from "@/store/ui-store";
 import { useCaseStore } from "@/store/case-store";
 import { useTemplateStore } from "@/store/template-store";
@@ -19,6 +28,7 @@ declare module "@tanstack/react-table" {
 export const COLUMN_LABELS: Record<string, string> = {
   mrn: "MRN",
   finalized: "Finalized",
+  category: "Category",
   age: "Age",
   gestationalAge: "Gestational Age",
   gravida: "Gravida",
@@ -102,6 +112,81 @@ function TextCell({
   );
 }
 
+function CategoryCell({
+  caseId,
+  tab,
+  value,
+}: {
+  caseId: string;
+  tab: CaseTab;
+  value?: number;
+}) {
+  const reviewMode = useUIStore((s) => s.reviewMode);
+  const updateCase = useCaseStore((s) => s.updateCase);
+  const [open, setOpen] = useState(false);
+  const label = getCategoryLabel(tab, value);
+
+  // Review mode: clicking opens a modal to change the category in place.
+  if (reviewMode) {
+    const categories = getCategories(tab) ?? [];
+    return (
+      <>
+        <button
+          type="button"
+          title={label ?? "Set category"}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
+          className="min-w-5 rounded px-1 text-left underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 hover:bg-primary/10 hover:text-accent-foreground print:no-underline"
+        >
+          <span className="print:hidden">{value ?? "None"}</span>
+          <span className="hidden print:inline">{label ?? "None"}</span>
+        </button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent
+            className="sm:max-w-xl p-0 gap-0 overflow-hidden"
+            // Allow click-outside to dismiss (overrides the default that
+            // prevents it — kept on the case add/edit dialog).
+            onInteractOutside={undefined}
+          >
+            <DialogHeader className="px-4 pt-4 pb-2">
+              <DialogTitle>Category</DialogTitle>
+              <DialogDescription className="sr-only">
+                Search and select a category for this case.
+              </DialogDescription>
+            </DialogHeader>
+            <CategoryList
+              categories={categories}
+              value={value}
+              autoFocus
+              onSelect={(num) => {
+                updateCase(caseId, { category: num });
+                setOpen(false);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
+  if (value == null) return <span className="text-muted-foreground">—</span>;
+  if (!label) return <span>{value}</span>;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="cursor-default underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 print:no-underline">
+          {/* Number on screen, full label when printed (tooltips don't print) */}
+          <span className="print:hidden">{value}</span>
+          <span className="hidden print:inline">{label}</span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 function MrnCell({ row, onClick }: { row: Case; onClick?: (row: Case) => void }) {
   const reviewMode = useUIStore((s) => s.reviewMode);
   return (
@@ -144,6 +229,17 @@ const ALL_COLUMNS: Record<string, ColumnDef<Case>> = {
     accessorKey: "finalized",
     header: "Finalized",
     cell: ({ row }) => <FinalizedCell value={row.getValue("finalized")} />,
+  },
+  category: {
+    accessorKey: "category",
+    header: "Cat",
+    cell: ({ row }) => (
+      <CategoryCell
+        caseId={row.original.id}
+        tab={row.original.caseType}
+        value={row.original.category}
+      />
+    ),
   },
   age: {
     accessorKey: "age",

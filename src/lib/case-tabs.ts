@@ -28,6 +28,7 @@ export const TAB_CONFIG: TabConfig[] = [
     columns: [
       "mrn",
       "finalized",
+      "category",
       "age",
       "gestationalAge",
       "gravida",
@@ -49,6 +50,7 @@ export const TAB_CONFIG: TabConfig[] = [
     columns: [
       "mrn",
       "finalized",
+      "category",
       "age",
       "gravida",
       "para",
@@ -105,4 +107,91 @@ export const COLUMN_LABELS_MAP: Partial<Record<keyof Case, string>> = {
   diagnosticProcedures: "Diagnostic Procedures",
   treatment: "Treatment",
   result: "Result",
+  category: "Category",
 };
+
+/**
+ * Case categories per tab. A case stores the 1-based position of its category
+ * in these lists (Case.category); the label is looked up at display time so the
+ * stored data stays compact and the canonical wording lives in one place.
+ * Office has no categories.
+ */
+export const CATEGORIES: Partial<Record<CaseTab, string[]>> = {
+  gyn: [
+    "Routine postoperative care",
+    "Intraoperative and postoperative urologic complications",
+    "Intraoperative and postoperative wound complications",
+    "Intraoperative and postoperative vascular injuries and hemorrhage",
+    "Intraoperative and postoperative nerve injury",
+    "Intraoperative and postoperative gastrointestinal complications",
+    "Postoperative pulmonary complications",
+    "Adnexal emergencies, including PID/TOA, adnexal torsion, ruptured ovarian cysts",
+    "Vulvar emergencies, including Bartholin gland duct abscess, vulvar abscess, fasciitis, straddle injury, sexual assault",
+    "Ectopic pregnancies",
+    "Pregnancies of unknown location",
+    "Acute uterine complications, including hemorrhage, prolapsing fibroid, degenerating fibroid hematometra",
+    "Urologic emergencies, including stones, pyelonephritis, diverticulum infection, obstruction associated with procidentia",
+    "Pelvic infections",
+    "Operative hysteroscopy",
+    "Minimally invasive hysterectomy",
+    "Operative laparoscopy",
+    "Excisional procedures for preinvasive cervical disease",
+    "Excisional procedures for vulvar lesions",
+    "Dilation and curettage (non-obstetric)",
+    "Vulvar or vaginal procedures",
+    "Diagnostic cystoscopy",
+    "Exploratory laparotomy",
+    "Abdominal hysterectomy",
+    "Abdominal myomectomy",
+    "Open adnexal procedures",
+    "Diagnostic and operative cystoscopy and urethroscopy",
+    "Surgical repair of urinary incontinence",
+    "Vesicovaginal fistula repair",
+    "Surgical repair of pelvic organ prolapse, including apical prolapse and colpocleisis",
+    "Obstetrical D&E and D&C (miscarriage and abortion management)",
+    "Procedural management of abnormal first trimester pregnancy (non-emergent ectopic pregnancies, miscarriage)",
+  ],
+  ob: [
+    "Co-existent medical comorbidities in the preconception, antenatal and intra and postpartum management.",
+    "Abnormal carrier screening, aneuploidy screening, diagnostic testing",
+    "Anomalous fetus identified during second-trimester",
+    "Antepartum fetal assessment",
+    "Spontaneous pre-term birth (including preterm labor/delivery, cervical insufficiency, PPROM)",
+    "Multifetal gestation",
+    "Fetal growth abnormalities",
+    "Postterm gestation",
+    "Stillbirth",
+    "Hypertensive disorders of pregnancy",
+    "Diabetes mellitus (pregestational and gestational)",
+    "Medical disorders unique to pregnancy (hyperemesis, cholestasis of pregnancy, acute fatty liver of pregnancy, peripartum cardiomyopathy, PUPPP/PEP, pemphigoid gestationis, isoimmunization)",
+    "Antepartum infections (HIV, varicella, parvovirus, syphilis, TORCH, COVID-19, pyelonephritis, etc.)",
+    "Non-obstetrical emergencies during pregnancy (acute abdomen, adnexal masses, renal stone, trauma)",
+    "Operative vaginal deliveries",
+    "Cesarean deliveries",
+    "Obstetrical lacerations",
+    "Neonatal resuscitation and circumcisions",
+    "Induction or augmentation of labor and labor abnormalities (e.g., dystocia, PROM, cord problems, abnormal position or presentation)",
+    "Postpartum hemorrhage and uterine inversion",
+    "Placental abnormalities",
+    "Acute maternal decompensation",
+    "Fetal heart rate abnormalities",
+    "Prior cesarean delivery",
+    "Infection in labor (e.g., chorioamnionitis, Group B streptococcus, HSV, HIV, HBV, HCV)",
+    "Complicated vaginal deliveries (includes twin, vaginal breech, shoulder dystocia and ECV, excluding operative deliveries)",
+    "Peripartum hysterectomy",
+    "Immediate postpartum contraception",
+    "Basic ultrasound (list number for first, second, and third trimester)",
+    "Postpartum complications (including readmissions, lactation, and breastfeeding complications)",
+  ],
+};
+
+/** Category labels for a tab, or undefined if the tab has no categories. */
+export function getCategories(tab: CaseTab): string[] | undefined {
+  return CATEGORIES[tab];
+}
+
+/** Full label for a stored category number (1-based), or undefined if unknown. */
+export function getCategoryLabel(tab: CaseTab, num: number | undefined): string | undefined {
+  if (num == null) return undefined;
+  return CATEGORIES[tab]?.[num - 1];
+}

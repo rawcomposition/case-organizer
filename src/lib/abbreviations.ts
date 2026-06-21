@@ -112,6 +112,7 @@ export const approvedAbbreviations: [string, string][] = [
   ["IgG", "Immunoglobulin G"],
   ["IgM", "Immunoglobulin M"],
   ["IM", "Intramuscular"],
+  ["IMB", "Intermenstrual bleeding"],
   ["INR", "International normalized ratio"],
   ["IPG", "Implantable pulse generator"],
   ["IUD", "Intrauterine device"],
@@ -255,6 +256,7 @@ export const approvedAbbreviations: [string, string][] = [
 // an approved abbreviation or a spelled-out term.
 export const abbreviationCorrections: { wrong: string; replacement: string }[] = [
   ["USLS", "USLF"],
+  ["TVUS", "TVS"],
   ["OCP", "COC"],
   ["BS", "bilateral salpingectomy"],
 ].map(([wrong, replacement]) => ({ wrong, replacement }));

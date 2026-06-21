@@ -10,11 +10,14 @@ import {
 import { Plus, SlidersHorizontal, Search, Download, WrapText } from "lucide-react";
 import { exportCases } from "@/lib/export";
 import { COLUMN_LABELS } from "./columns";
+import { CategorySummary } from "./category-summary";
 import { useUIStore } from "@/store/ui-store";
+import type { CaseTab } from "@/lib/case-tabs";
 import { cn } from "@/lib/utils";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  activeTab: CaseTab;
   globalFilter: string;
   onGlobalFilterChange: (value: string) => void;
   onAddCase: () => void;
@@ -22,6 +25,7 @@ interface DataTableToolbarProps<TData> {
 
 export function DataTableToolbar<TData>({
   table,
+  activeTab,
   globalFilter,
   onGlobalFilterChange,
   onAddCase,
@@ -76,6 +80,7 @@ export function DataTableToolbar<TData>({
         >
           <WrapText className="h-4 w-4" />
         </Button>
+        <CategorySummary activeTab={activeTab} />
         <Button variant="ghost" size="icon" onClick={exportCases}>
           <Download className="h-4 w-4" />
         </Button>

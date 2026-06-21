@@ -16,11 +16,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useUIStore } from "@/store/ui-store";
+import type { CaseTab } from "@/lib/case-tabs";
 import { DataTableToolbar } from "./data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  activeTab: CaseTab;
   onRowClick: (row: TData) => void;
   onAddCase: () => void;
 }
@@ -28,6 +30,7 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
+  activeTab,
   onRowClick,
   onAddCase,
 }: DataTableProps<TData, TValue>) {
@@ -58,6 +61,7 @@ export function DataTable<TData, TValue>({
     <div>
       <DataTableToolbar
         table={table}
+        activeTab={activeTab}
         globalFilter={globalFilter}
         onGlobalFilterChange={setGlobalFilter}
         onAddCase={onAddCase}

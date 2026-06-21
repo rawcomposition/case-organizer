@@ -142,6 +142,7 @@ function App() {
       <DataTable
         columns={columns}
         data={filteredCases}
+        activeTab={activeTab}
         onRowClick={handleRowClick}
         onAddCase={handleAddCase}
       />

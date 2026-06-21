@@ -21,3 +21,25 @@ export function parseImport(text: string): Case[] {
   }
   return parsed as Case[];
 }
+
+function escapeCSVCell(value: unknown): string {
+  const str = value == null ? "" : String(value);
+  return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+export function toCSV(headers: string[], rows: unknown[][]): string {
+  return [headers, ...rows]
+    .map((cells) => cells.map(escapeCSVCell).join(","))
+    .join("\r\n");
+}
+
+export function downloadCSV(filename: string, csv: string) {
+  // Prepend a BOM so Excel reads UTF-8 correctly
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}

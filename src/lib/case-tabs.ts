@@ -1,4 +1,4 @@
-import type { Case } from "./types";
+import type { Case, CaseFormData } from "./types";
 
 export type CaseTab = "ob" | "gyn" | "office";
 
@@ -6,9 +6,9 @@ export interface TabConfig {
   id: CaseTab;
   label: string;
   /** Field keys shown in the numeric row of the form */
-  numericFields: (keyof Case)[];
+  numericFields: (keyof CaseFormData)[];
   /** Field keys shown as textareas in the form */
-  textFields: (keyof Case)[];
+  textFields: (keyof CaseFormData)[];
   /** Whether to show the newborns repeater */
   showNewborns: boolean;
   /** Whether to show the GA (gestational age) text input */

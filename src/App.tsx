@@ -5,9 +5,9 @@ import { useCaseStore } from "@/store/case-store";
 import { useUIStore } from "@/store/ui-store";
 import type { Case, CaseFormData } from "@/lib/types";
 import { getRandomEncouragingMessage } from "@/lib/messages";
-import { parseImport } from "@/lib/export";
+import { parseImport, toCSV, downloadCSV } from "@/lib/export";
 import { playTadaSound } from "@/lib/sounds";
-import { getColumnsForTab } from "@/components/cases/columns";
+import { getColumnsForTab, COLUMN_LABELS } from "@/components/cases/columns";
 import { Header } from "@/components/layout/header";
 import { TabBar } from "@/components/layout/tab-bar";
 import { DataTable } from "@/components/cases/data-table";
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { SettingsPage } from "@/components/settings/settings-page";
 import { useTemplateStore } from "@/store/template-store";
 import { getTabConfig } from "@/lib/case-tabs";
-import { Upload, Settings } from "lucide-react";
+import { Upload, Download, Settings } from "lucide-react";
 
 type SheetMode = "view" | "edit" | "create";
 type Page = "main" | "settings";
@@ -29,6 +29,7 @@ function App() {
   const importCases = useCaseStore((s) => s.importCases);
   const activeTab = useUIStore((s) => s.activeTab);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const columnVisibility = useUIStore((s) => s.columnVisibility);
   const templates = useTemplateStore((s) => s.templates);
   const requiredFields = useTemplateStore((s) => s.requiredFields);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,6 +82,24 @@ function App() {
   const handleDelete = (id: string) => {
     deleteCase(id);
     toast.success("Case deleted.");
+  };
+
+  const handleExportCSV = () => {
+    // Respect the column-visibility filter: a column is hidden only when
+    // explicitly set to false (undefined means visible).
+    const columnKeys = getTabConfig(activeTab).columns.filter(
+      (key) => columnVisibility[key] !== false
+    );
+    const headers = columnKeys.map((key) => COLUMN_LABELS[key] ?? key);
+    const rows = filteredCases.map((c) =>
+      columnKeys.map((key) => {
+        const value = c[key as keyof Case];
+        if (typeof value === "boolean") return value ? "Yes" : "No";
+        return value ?? "";
+      })
+    );
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCSV(`cases-${activeTab}-${date}.csv`, toCSV(headers, rows));
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,6 +170,16 @@ function App() {
         >
           <Upload className="mr-1.5 h-3 w-3" />
           Import
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground text-xs"
+          disabled={!filteredCases.length}
+          onClick={handleExportCSV}
+        >
+          <Download className="mr-1.5 h-3 w-3" />
+          Download CSV
         </Button>
         <Button
           variant="ghost"

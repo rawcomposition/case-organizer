@@ -12,6 +12,8 @@ interface UIState {
   ) => void;
   reviewMode: boolean;
   toggleReviewMode: () => void;
+  abbrReview: boolean;
+  toggleAbbrReview: () => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -30,8 +32,15 @@ export const useUIStore = create<UIState>()(
         set({ columnVisibility: next });
       },
 
+      // reviewMode (inline editing) and abbrReview (abbreviation highlighting)
+      // are mutually exclusive — turning one on turns the other off.
       reviewMode: false,
-      toggleReviewMode: () => set((s) => ({ reviewMode: !s.reviewMode })),
+      toggleReviewMode: () =>
+        set((s) => ({ reviewMode: !s.reviewMode, abbrReview: false })),
+
+      abbrReview: false,
+      toggleAbbrReview: () =>
+        set((s) => ({ abbrReview: !s.abbrReview, reviewMode: false })),
     }),
     { name: "case-organizer-ui" }
   )

@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, SlidersHorizontal, Search, Download, WrapText } from "lucide-react";
+import { Plus, SlidersHorizontal, Search, Download, WrapText, SpellCheck } from "lucide-react";
 import { exportCases } from "@/lib/export";
 import { COLUMN_LABELS } from "./columns";
 import { CategorySummary } from "./category-summary";
@@ -32,6 +32,8 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const reviewMode = useUIStore((s) => s.reviewMode);
   const toggleReviewMode = useUIStore((s) => s.toggleReviewMode);
+  const abbrReview = useUIStore((s) => s.abbrReview);
+  const toggleAbbrReview = useUIStore((s) => s.toggleAbbrReview);
   return (
     <div className="flex items-center justify-center pb-6 print:hidden">
       <div className="flex items-center gap-2 bg-secondary/60 p-2 rounded-full">
@@ -79,6 +81,16 @@ export function DataTableToolbar<TData>({
           className={cn(reviewMode && "shadow-none")}
         >
           <WrapText className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={abbrReview ? "default" : "ghost"}
+          size="icon"
+          onClick={toggleAbbrReview}
+          title={abbrReview ? "Abbreviation review on" : "Abbreviation review off"}
+          aria-pressed={abbrReview}
+          className={cn(abbrReview && "shadow-none")}
+        >
+          <SpellCheck className="h-4 w-4" />
         </Button>
         <CategorySummary activeTab={activeTab} />
         <Button variant="ghost" size="icon" onClick={exportCases}>

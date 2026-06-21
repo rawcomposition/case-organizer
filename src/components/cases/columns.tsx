@@ -16,6 +16,7 @@ import { useUIStore } from "@/store/ui-store";
 import { useCaseStore } from "@/store/case-store";
 import { useTemplateStore } from "@/store/template-store";
 import { CharCounter } from "@/components/ui/char-counter";
+import { analyzeAbbreviations } from "@/lib/abbreviations";
 import { cn } from "@/lib/utils";
 
 declare module "@tanstack/react-table" {
@@ -60,6 +61,7 @@ function TextCell({
   value: string;
 }) {
   const reviewMode = useUIStore((s) => s.reviewMode);
+  const abbrReview = useUIStore((s) => s.abbrReview);
   const updateCase = useCaseStore((s) => s.updateCase);
   const charLimit = useTemplateStore((s) => s.charLimits[`${caseTab}.${field}`] ?? null);
   const [draft, setDraft] = useState(value);
@@ -78,8 +80,17 @@ function TextCell({
   }, [draft, reviewMode]);
 
   if (!reviewMode) {
+    // Abbreviation review: flag fields that use an unapproved abbreviation
+    // (red) or that could use an approved one but spell it out (yellow).
+    const status = abbrReview ? analyzeAbbreviations(value) : null;
     return (
-      <span className="max-w-[200px] truncate block text-muted-foreground print:max-w-none print:overflow-visible print:whitespace-pre-wrap">
+      <span
+        className={cn(
+          "max-w-[200px] truncate block text-muted-foreground print:max-w-none print:overflow-visible print:whitespace-pre-wrap",
+          status === "red" && "bg-red-100 text-red-900 rounded px-1 print:bg-transparent",
+          status === "yellow" && "bg-yellow-100 text-yellow-900 rounded px-1 print:bg-transparent"
+        )}
+      >
         {value || "—"}
       </span>
     );

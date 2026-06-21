@@ -9,7 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { CategorySelect } from "./category-select";
 import { CharCounter } from "@/components/ui/char-counter";
 import { useTemplateStore } from "@/store/template-store";
-import { Plus, Trash2 } from "lucide-react";
+import { useUIStore } from "@/store/ui-store";
+import { getAbbreviationIssues, applyAbbreviation } from "@/lib/abbreviations";
+import { cn } from "@/lib/utils";
+import { Plus, Trash2, TriangleAlert, Lightbulb } from "lucide-react";
 
 const VARIABLE_REGEX = /\{[^}]+\}/g;
 
@@ -87,6 +90,7 @@ export function CaseForm({ initialData, caseTab, templateDefaults, requiredField
   const tabConfig = getTabConfig(caseTab);
   const categories = getCategories(caseTab);
   const charLimits = useTemplateStore((s) => s.charLimits);
+  const abbrReview = useUIStore((s) => s.abbrReview);
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
@@ -167,6 +171,11 @@ export function CaseForm({ initialData, caseTab, templateDefaults, requiredField
     value: CaseFormData[K]
   ) => {
     setFormData({ ...formData, [key]: value });
+  };
+
+  const fixAbbreviation = (field: keyof CaseFormData, expansion: string, abbr: string) => {
+    const current = (formData[field] as string) ?? "";
+    setField(field, applyAbbreviation(current, expansion, abbr) as CaseFormData[typeof field]);
   };
 
   const numericChange = (key: keyof CaseFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -259,11 +268,57 @@ export function CaseForm({ initialData, caseTab, templateDefaults, requiredField
       {tabConfig.textFields.map((field) => {
         const value = (formData[field] as string) ?? "";
         const charLimit = charLimits[`${caseTab}.${field}`] ?? null;
+        const abbrIssues = abbrReview ? getAbbreviationIssues(value) : [];
         return (
           <div key={field} className="space-y-1.5">
             <label htmlFor={field} className="text-sm font-medium">
               {COLUMN_LABELS_MAP[field] ?? field}
             </label>
+            {abbrIssues.length > 0 && (
+              <ul className="space-y-1.5">
+                {abbrIssues.map((issue, i) => (
+                  <li
+                    key={i}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md border px-3 py-2 text-sm",
+                      issue.type === "unapproved"
+                        ? "border-red-200 bg-red-50 text-red-700"
+                        : "border-amber-200 bg-amber-50 text-amber-700"
+                    )}
+                  >
+                    {issue.type === "unapproved" ? (
+                      <TriangleAlert className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <Lightbulb className="h-4 w-4 shrink-0" />
+                    )}
+                    <span className="flex-1">
+                      {issue.type === "unapproved" ? (
+                        <>
+                          &ldquo;<span className="font-semibold">{issue.term}</span>&rdquo; is not an
+                          approved abbreviation
+                        </>
+                      ) : (
+                        <>
+                          Use &ldquo;<span className="font-semibold">{issue.term}</span>&rdquo; for
+                          &ldquo;{issue.expansion}&rdquo;
+                        </>
+                      )}
+                    </span>
+                    {issue.type === "opportunity" && issue.expansion && (
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="outline"
+                        className="border-amber-300 bg-white text-amber-800 hover:bg-amber-100"
+                        onClick={() => fixAbbreviation(field, issue.expansion!, issue.term)}
+                      >
+                        Fix
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="relative">
               <Textarea
                 ref={(el) => { textareaRefs.current[field] = el; }}

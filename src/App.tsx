@@ -30,6 +30,7 @@ function App() {
   const activeTab = useUIStore((s) => s.activeTab);
   const setActiveTab = useUIStore((s) => s.setActiveTab);
   const columnVisibility = useUIStore((s) => s.columnVisibility);
+  const abbrReview = useUIStore((s) => s.abbrReview);
   const templates = useTemplateStore((s) => s.templates);
   const requiredFields = useTemplateStore((s) => s.requiredFields);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +50,9 @@ function App() {
 
   const handleRowClick = (caseItem: Case) => {
     setSelectedCase(caseItem);
-    setSheetMode("view");
+    // In abbreviation review, jump straight to editing so flagged fields can
+    // be fixed in place.
+    setSheetMode(abbrReview ? "edit" : "view");
     setSheetOpen(true);
   };
 

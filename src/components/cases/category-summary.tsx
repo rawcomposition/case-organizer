@@ -45,7 +45,10 @@ export function CategorySummary({ activeTab }: { activeTab: CaseTab }) {
           <ChartColumn className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent
+        className="sm:max-w-xl"
+        onInteractOutside={undefined}
+      >
         <DialogHeader>
           <DialogTitle>Category Summary</DialogTitle>
           <DialogDescription>

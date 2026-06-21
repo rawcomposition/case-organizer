@@ -248,6 +248,23 @@ export const approvedAbbreviations: [string, string][] = [
   ["ED", "Emergency department"],
 ];
 
+// Abbreviations that are frequently written but are NOT on the approved list,
+// each mapped to what should be used instead. Drives a "Fix" button that swaps
+// the written form for the replacement. `wrong` is matched as a whole-word,
+// case-insensitive acronym token; `replacement` is inserted verbatim — it may be
+// an approved abbreviation or a spelled-out term.
+export const abbreviationCorrections: { wrong: string; replacement: string }[] = [
+  ["USLS", "USLF"],
+  ["OCP", "COC"],
+  ["BS", "bilateral salpingectomy"],
+].map(([wrong, replacement]) => ({ wrong, replacement }));
+
+// Common misspellings of approved expansions, mapped to what should be used
+// instead — the approved abbreviation when one exists.
+export const expansionMisspellings: { wrong: string; correct: string }[] = [
+  ["dilation and curettage", "D & C"],
+].map(([wrong, correct]) => ({ wrong, correct }));
+
 export type AbbrStatus = "red" | "yellow" | null;
 
 function escapeRegExp(s: string): string {
@@ -285,6 +302,20 @@ const EXPANSIONS: { abbr: string; abbrKey: string; expansionText: string; expans
     expansion: new RegExp(`\\b${escapeRegExp(expansion)}\\b`, "i"),
   }));
 
+// Lookup from a normalized unapproved abbreviation to its replacement.
+const CORRECTIONS: Map<string, string> = new Map(
+  abbreviationCorrections.map(({ wrong, replacement }) => [normalizeAbbr(wrong), replacement])
+);
+
+// Pre-compiled matchers for misspelled expansions. Case-insensitive and
+// word-boundaried so they only fire on the whole phrase.
+const MISSPELLINGS: { wrong: string; correct: string; re: RegExp }[] =
+  expansionMisspellings.map(({ wrong, correct }) => ({
+    wrong,
+    correct,
+    re: new RegExp(`\\b${escapeRegExp(wrong)}\\b`, "i"),
+  }));
+
 // Tokens we treat as acronym candidates: all-uppercase runs (letters, digits,
 // hyphens) such as "TVH" or "PGT-A". Capitalized words like "Antepartum" have
 // lowercase letters and are skipped.
@@ -317,6 +348,11 @@ export function analyzeAbbreviations(text: string): AbbrStatus {
     if (!APPROVED_KEYS.has(key)) return "red";
   }
 
+  // Red: a misspelled expansion (e.g. "dilation and curettage").
+  for (const { re } of MISSPELLINGS) {
+    if (re.test(text)) return "red";
+  }
+
   // Yellow: a spelled-out expansion is present but its abbreviation isn't used.
   for (const { abbrKey, expansion } of EXPANSIONS) {
     if (used.has(abbrKey)) continue;
@@ -329,12 +365,17 @@ export function analyzeAbbreviations(text: string): AbbrStatus {
 export interface AbbrIssue {
   // "unapproved": an abbreviation used that isn't on the approved list.
   // "opportunity": a spelled-out term that has an approved abbreviation.
-  type: "unapproved" | "opportunity";
-  // For "unapproved", the abbreviation as written; for "opportunity", the
-  // approved abbreviation to use.
+  // "correction": an unapproved abbreviation that has a known replacement.
+  // "misspelling": a misspelled expansion that has a known correct spelling.
+  type: "unapproved" | "opportunity" | "correction" | "misspelling";
+  // For "opportunity", the approved abbreviation to use; otherwise the text as
+  // written (the abbreviation or phrase being flagged).
   term: string;
   // The spelled-out expansion (opportunity only).
   expansion?: string;
+  // What "term" should be replaced with — the value the Fix button swaps in
+  // (correction and misspelling only).
+  replacement?: string;
 }
 
 // Detailed version of analyzeAbbreviations: lists every problematic
@@ -352,8 +393,12 @@ export function getAbbreviationIssues(text: string): AbbrIssue[] {
     const key = normalizeAbbr(token);
     if (letterCount(key) < 2) continue;
     used.add(key);
-    if (!APPROVED_KEYS.has(key) && !seenUnapproved.has(key)) {
-      seenUnapproved.add(key);
+    if (APPROVED_KEYS.has(key) || seenUnapproved.has(key)) continue;
+    seenUnapproved.add(key);
+    const replacement = CORRECTIONS.get(key);
+    if (replacement) {
+      issues.push({ type: "correction", term: token, replacement });
+    } else {
       issues.push({ type: "unapproved", term: token });
     }
   }
@@ -362,6 +407,12 @@ export function getAbbreviationIssues(text: string): AbbrIssue[] {
     if (used.has(abbrKey)) continue;
     if (expansion.test(text)) {
       issues.push({ type: "opportunity", term: abbr, expansion: expansionText });
+    }
+  }
+
+  for (const { wrong, correct, re } of MISSPELLINGS) {
+    if (re.test(text)) {
+      issues.push({ type: "misspelling", term: wrong, replacement: correct });
     }
   }
 

@@ -281,26 +281,41 @@ export function CaseForm({ initialData, caseTab, templateDefaults, requiredField
                     key={i}
                     className={cn(
                       "flex items-center gap-2 rounded-md border px-3 py-2 text-sm",
-                      issue.type === "unapproved"
-                        ? "border-red-200 bg-red-50 text-red-700"
-                        : "border-amber-200 bg-amber-50 text-amber-700"
+                      issue.type === "opportunity"
+                        ? "border-amber-200 bg-amber-50 text-amber-700"
+                        : "border-red-200 bg-red-50 text-red-700"
                     )}
                   >
-                    {issue.type === "unapproved" ? (
-                      <TriangleAlert className="h-4 w-4 shrink-0" />
-                    ) : (
+                    {issue.type === "opportunity" ? (
                       <Lightbulb className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <TriangleAlert className="h-4 w-4 shrink-0" />
                     )}
                     <span className="flex-1">
-                      {issue.type === "unapproved" ? (
+                      {issue.type === "unapproved" && (
                         <>
                           &ldquo;<span className="font-semibold">{issue.term}</span>&rdquo; is not an
                           approved abbreviation
                         </>
-                      ) : (
+                      )}
+                      {issue.type === "opportunity" && (
                         <>
                           Use &ldquo;<span className="font-semibold">{issue.term}</span>&rdquo; for
                           &ldquo;{issue.expansion}&rdquo;
+                        </>
+                      )}
+                      {issue.type === "correction" && (
+                        <>
+                          &ldquo;<span className="font-semibold">{issue.term}</span>&rdquo; is not
+                          approved — use &ldquo;
+                          <span className="font-semibold">{issue.replacement}</span>&rdquo;
+                        </>
+                      )}
+                      {issue.type === "misspelling" && (
+                        <>
+                          &ldquo;<span className="font-semibold">{issue.term}</span>&rdquo; is
+                          misspelled — use &ldquo;
+                          <span className="font-semibold">{issue.replacement}</span>&rdquo;
                         </>
                       )}
                     </span>
@@ -315,6 +330,18 @@ export function CaseForm({ initialData, caseTab, templateDefaults, requiredField
                         Fix
                       </Button>
                     )}
+                    {(issue.type === "correction" || issue.type === "misspelling") &&
+                      issue.replacement && (
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="outline"
+                          className="border-red-300 bg-white text-red-800 hover:bg-red-100"
+                          onClick={() => fixAbbreviation(field, issue.term, issue.replacement!)}
+                        >
+                          Fix
+                        </Button>
+                      )}
                   </li>
                 ))}
               </ul>

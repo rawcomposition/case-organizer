@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { nanoid } from "nanoid";
 import type { CaseFormData, Newborn } from "@/lib/types";
 import { type CaseTab, getTabConfig, getCategories, COLUMN_LABELS_MAP } from "@/lib/case-tabs";
@@ -48,6 +48,7 @@ interface CaseFormProps {
   requiredFields?: Record<string, boolean>;
   onSave: (data: CaseFormData) => void;
   onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const DEFAULT_DATA: CaseFormData = {
@@ -86,7 +87,7 @@ function createNewborn(): Newborn {
   };
 }
 
-export function CaseForm({ initialData, caseTab, templateDefaults, requiredFields = {}, onSave, onCancel }: CaseFormProps) {
+export function CaseForm({ initialData, caseTab, templateDefaults, requiredFields = {}, onSave, onCancel, onDirtyChange }: CaseFormProps) {
   const tabConfig = getTabConfig(caseTab);
   const categories = getCategories(caseTab);
   const charLimits = useTemplateStore((s) => s.charLimits);
@@ -98,6 +99,21 @@ export function CaseForm({ initialData, caseTab, templateDefaults, requiredField
     if (initialData) return initialData;
     return { ...DEFAULT_DATA, caseType: caseTab, ...templateDefaults };
   });
+
+  // Snapshot of the initial values, used to detect unsaved changes.
+  const initialSnapshotRef = useRef<string | null>(null);
+  if (initialSnapshotRef.current === null) {
+    initialSnapshotRef.current = JSON.stringify(formData);
+  }
+
+  useEffect(() => {
+    onDirtyChange?.(JSON.stringify(formData) !== initialSnapshotRef.current);
+  }, [formData, onDirtyChange]);
+
+  // Clear the dirty flag when the form unmounts (closed or switched to view).
+  useEffect(() => {
+    return () => onDirtyChange?.(false);
+  }, [onDirtyChange]);
 
   const isRequired = (field: string) => requiredFields[`${caseTab}.${field}`] ?? false;
 

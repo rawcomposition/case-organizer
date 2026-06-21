@@ -23,6 +23,7 @@ interface CaseSheetProps {
 
 export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, activeTab, onSave, onDelete, templateDefaults, requiredFields }: CaseSheetProps) {
   const [mode, setMode] = useState<SheetMode>(initialMode);
+  const [isDirty, setIsDirty] = useState(false);
 
   const effectiveMode = initialMode === "create" ? "create" : initialMode === "edit" ? "edit" : mode;
 
@@ -31,6 +32,7 @@ export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, act
 
   const handleSave = (data: CaseFormData) => {
     onSave(data);
+    setIsDirty(false);
     onOpenChange(false);
     setMode("view");
   };
@@ -45,6 +47,11 @@ export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, act
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
+      // Closing via the X button or Escape — warn if the form has unsaved edits.
+      if (isDirty && !window.confirm("You have unsaved changes. Discard them?")) {
+        return;
+      }
+      setIsDirty(false);
       setMode("view");
     }
     onOpenChange(open);
@@ -112,6 +119,7 @@ export function CaseSheet({ open, onOpenChange, mode: initialMode, caseData, act
             requiredFields={requiredFields}
             onSave={handleSave}
             onCancel={handleCancel}
+            onDirtyChange={setIsDirty}
           />
         )}
       </DialogContent>

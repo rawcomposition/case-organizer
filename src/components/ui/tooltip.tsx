@@ -4,7 +4,7 @@ import { Tooltip as TooltipPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 function TooltipProvider({
-  delayDuration = 200,
+  delayDuration = 0,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (
@@ -35,6 +35,7 @@ function TooltipTrigger({
 function TooltipContent({
   className,
   sideOffset = 4,
+  collisionPadding = 8,
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content>) {
@@ -43,14 +44,14 @@ function TooltipContent({
       <TooltipPrimitive.Content
         data-slot="tooltip-content"
         sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
         className={cn(
-          "bg-popover text-popover-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit max-w-xs rounded-md border px-3 py-1.5 text-xs shadow-md",
+          "bg-neutral-900/90 text-neutral-50 backdrop-blur-sm z-50 w-fit max-w-xs rounded-md px-3 py-1.5 text-sm shadow-md",
           className
         )}
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow className="fill-popover -my-px z-50 size-2.5 rotate-45 border-r border-b" />
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   )

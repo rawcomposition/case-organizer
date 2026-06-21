@@ -129,20 +129,29 @@ function CategoryCell({
   // Review mode: clicking opens a modal to change the category in place.
   if (reviewMode) {
     const categories = getCategories(tab) ?? [];
+    const trigger = (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        className="min-w-5 rounded px-1 text-left underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 hover:bg-primary/10 hover:text-accent-foreground print:no-underline"
+      >
+        <span className="print:hidden">{value ?? "None"}</span>
+        <span className="hidden print:inline">{label ?? "None"}</span>
+      </button>
+    );
     return (
       <>
-        <button
-          type="button"
-          title={label ?? "Set category"}
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen(true);
-          }}
-          className="min-w-5 rounded px-1 text-left underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 hover:bg-primary/10 hover:text-accent-foreground print:no-underline"
-        >
-          <span className="print:hidden">{value ?? "None"}</span>
-          <span className="hidden print:inline">{label ?? "None"}</span>
-        </button>
+        {label ? (
+          <Tooltip>
+            <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+            <TooltipContent>{label}</TooltipContent>
+          </Tooltip>
+        ) : (
+          trigger
+        )}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent
             className="sm:max-w-xl p-0 gap-0 overflow-hidden"

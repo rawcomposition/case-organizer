@@ -3,6 +3,9 @@ import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
 import type { Case, CaseFormData } from "@/lib/types";
 
+/** Cases saved before tabs existed have no caseType; they belong to OB. */
+const normalizeCase = (c: Case): Case => ({ ...c, caseType: c.caseType ?? "ob" });
+
 interface CaseState {
   cases: Case[];
   addCase: (data: CaseFormData) => Case;
@@ -43,9 +46,16 @@ export const useCaseStore = create<CaseState>()(
       },
 
       importCases: (cases) => {
-        set({ cases });
+        set({ cases: cases.map(normalizeCase) });
       },
     }),
-    { name: "case-organizer-cases" }
+    {
+      name: "case-organizer-cases",
+      version: 1,
+      migrate: (persisted) => {
+        const state = persisted as Pick<CaseState, "cases">;
+        return { ...state, cases: (state.cases ?? []).map(normalizeCase) };
+      },
+    }
   )
 );

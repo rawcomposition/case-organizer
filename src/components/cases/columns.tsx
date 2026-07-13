@@ -149,8 +149,7 @@ function CategoryCell({
         }}
         className="min-w-5 rounded px-1 text-left underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 hover:bg-primary/10 hover:text-accent-foreground print:no-underline"
       >
-        <span className="print:hidden">{value ?? "None"}</span>
-        <span className="hidden print:inline">{label ?? "None"}</span>
+        {value ?? "None"}
       </button>
     );
     return (
@@ -197,9 +196,7 @@ function CategoryCell({
     <Tooltip>
       <TooltipTrigger asChild>
         <span className="cursor-default underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 print:no-underline">
-          {/* Number on screen, full label when printed (tooltips don't print) */}
-          <span className="print:hidden">{value}</span>
-          <span className="hidden print:inline">{label}</span>
+          {value}
         </span>
       </TooltipTrigger>
       <TooltipContent>{label}</TooltipContent>

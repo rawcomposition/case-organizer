@@ -245,7 +245,9 @@ const ALL_COLUMNS: Record<string, ColumnDef<Case>> = {
   finalized: {
     accessorKey: "finalized",
     header: "Finalized",
-    cell: ({ row }) => <FinalizedCell value={row.getValue("finalized")} />,
+    cell: ({ row }) => (
+      <FinalizedCell caseId={row.original.id} value={row.getValue("finalized")} />
+    ),
   },
   category: {
     accessorKey: "category",
